@@ -27,6 +27,7 @@ class LooperProcessor extends AudioWorkletProcessor {
                     break;
 
                 case "reset":
+                    this.isRecording = false;
                     this.fixedLoop = new Float32Array();
                     this.initLoop = [];
                     this.currentLoopPos = 0;
