@@ -17,6 +17,10 @@ importers:
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
+    devDependencies:
+      '@types/audioworklet':
+        specifier: ^0.0.92
+        version: 0.0.92
 
 packages:
 
@@ -605,6 +609,9 @@ packages:
     resolution: {integrity: sha512-jVA+/UpKL1vRLg6Hkao5jldawNmRo7mQYrZtNHMIVpLfLhDml5nMRUo/8MwoX2vNXvnaXNNMedrMfMugAVX1nA==}
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7
+
+  '@types/audioworklet@0.0.92':
+    resolution: {integrity: sha512-ykniYTjl1eqgkLeHLH2AAgj4rqdFZyxeVDtCopTTlcvgH7nOHNSn0KYXZPgc0Mx0TiUAwHNEzBWoJw/i8OETBg==}
 
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
@@ -2145,6 +2152,8 @@ snapshots:
       '@tailwindcss/oxide': 4.1.18
       tailwindcss: 4.1.18
       vite: 6.4.1(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.30.2)
+
+  '@types/audioworklet@0.0.92': {}
 
   '@types/debug@4.1.12':
     dependencies:
