@@ -40,7 +40,11 @@ async function initAudioContext(): Promise<AudioContext> {
 
     const streamNode = new MediaStreamAudioSourceNode(audioCtx, { mediaStream: stream });
 
-    const looperNode = new AudioWorkletNode(audioCtx, "looper-processor");
+    const looperNode = new AudioWorkletNode(audioCtx, "looper-processor", {
+        numberOfInputs: 1,
+        numberOfOutputs: 1,
+        outputChannelCount: [1],
+    });
 
     streamNode.connect(looperNode);
 
@@ -57,11 +61,11 @@ async function initAudioContext(): Promise<AudioContext> {
             const latencyOffset = Math.floor(audioCtx.outputLatency * audioCtx.sampleRate);
 
             looperNode.parameters.get("latencyOffset")!.value = latencyOffset;
-            looperNode.parameters.get("isRecording")!.value = 1;
+            looperNode.port.postMessage("toggleRecord");
         } else {
             recordButton.innerHTML = "Start recording";
 
-            looperNode.parameters.get("isRecording")!.value = 0;
+            looperNode.port.postMessage("toggleRecord");
         }
 
         isRecording = !isRecording;
