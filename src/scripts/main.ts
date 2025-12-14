@@ -23,6 +23,8 @@ async function toggleAudioContext() {
 }
 
 async function initAudioContext(): Promise<AudioContext> {
+    // TODO: Pass på at stream og audioCtx bruker samme samplerate (vet ikke hvilken som skal få 1. pri)
+
     const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
             channelCount: 1,
@@ -49,12 +51,12 @@ async function initAudioContext(): Promise<AudioContext> {
     let isRecording = false;
 
     recordButton.addEventListener("click", () => {
-        console.log(audioCtx.baseLatency);
-        console.log(audioCtx.outputLatency);
-
         if (!isRecording) {
             recordButton.innerHTML = "Stop recording";
 
+            const latencyOffset = Math.floor(audioCtx.outputLatency * audioCtx.sampleRate);
+
+            looperNode.parameters.get("latencyOffset")!.value = latencyOffset;
             looperNode.parameters.get("isRecording")!.value = 1;
         } else {
             recordButton.innerHTML = "Start recording";

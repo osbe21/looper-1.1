@@ -8,6 +8,12 @@ class LooperProcessor extends AudioWorkletProcessor {
     static get parameterDescriptors() {
         return [
             {
+                name: "latencyOffset", // Hvor høy output latency-en er, i samples
+                defaultValue: 0,
+                minValue: 0,
+                automationRate: "k-rate",
+            },
+            {
                 name: "isRecording",
                 defaultValue: 0,
                 minValue: 0,
@@ -18,6 +24,7 @@ class LooperProcessor extends AudioWorkletProcessor {
     }
 
     process(inputs, outputs, parameters) {
+        const latencyOffset = parameters.latencyOffset[0];
         const isRecording = parameters.isRecording[0];
 
         const input = inputs[0][0];
@@ -33,7 +40,9 @@ class LooperProcessor extends AudioWorkletProcessor {
             // Vi er i standby
             if (this.fixedLoop.length > 0) {
                 for (let i = 0; i < output.length; i++) {
-                    output[i] = this.fixedLoop[this.currentLoopPos];
+                    const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.fixedLoop.length;
+
+                    output[i] = this.fixedLoop[latencyAdjustedPos];
 
                     this.currentLoopPos++;
                     this.currentLoopPos %= this.fixedLoop.length;
@@ -46,7 +55,9 @@ class LooperProcessor extends AudioWorkletProcessor {
             } else {
                 // Vi er i overdub
                 for (let i = 0; i < output.length; i++) {
-                    output[i] = this.fixedLoop[this.currentLoopPos];
+                    const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.fixedLoop.length;
+
+                    output[i] = this.fixedLoop[latencyAdjustedPos];
 
                     this.fixedLoop[this.currentLoopPos] += input[i];
 
