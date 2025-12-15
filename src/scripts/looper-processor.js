@@ -1,6 +1,15 @@
 // Typescript har ikke full støtte for AudioWorklets enda, så filen må skrives i js for å unngå // @ts-ignore overalt
 
+const State = {
+    Idle: 0,
+    InitLoop: 1,
+    Playback: 2,
+    Overdub: 3,
+};
+
 class LooperProcessor extends AudioWorkletProcessor {
+    static maxSamples = sampleRate * 60 * 5; // 5 minutter
+
     static get parameterDescriptors() {
         return [
             {
@@ -12,9 +21,9 @@ class LooperProcessor extends AudioWorkletProcessor {
         ];
     }
 
-    isRecording = false;
-    initLoop = [];
-    fixedLoop = new Float32Array();
+    state = State.Idle;
+    loop = new Float32Array(LooperProcessor.maxSamples);
+    loopLength = 0;
     currentLoopPos = 0;
 
     constructor(...args) {
@@ -23,17 +32,34 @@ class LooperProcessor extends AudioWorkletProcessor {
         this.port.onmessage = (e) => {
             switch (e.data) {
                 case "toggleRecord":
-                    this.isRecording = !this.isRecording;
+                    this.handleToggleRecord();
                     break;
 
                 case "reset":
-                    this.isRecording = false;
-                    this.fixedLoop = new Float32Array();
-                    this.initLoop = [];
+                    this.state = State.Idle;
+                    this.loop = new Float32Array(LooperProcessor.maxSamples);
+                    this.loopLength = 0;
                     this.currentLoopPos = 0;
                     break;
             }
         };
+    }
+
+    handleToggleRecord() {
+        switch (this.state) {
+            case State.Idle:
+                this.state = State.InitLoop;
+                break;
+            case State.InitLoop:
+                this.state = State.Playback;
+                break;
+            case State.Playback:
+                this.state = State.Overdub;
+                break;
+            case State.Overdub:
+                this.state = State.Playback;
+                break;
+        }
     }
 
     process(inputs, outputs, parameters) {
@@ -42,45 +68,50 @@ class LooperProcessor extends AudioWorkletProcessor {
         const input = inputs[0][0];
         const output = outputs[0][0];
 
-        if (!this.isRecording && this.initLoop.length > 0 && this.fixedLoop.length === 0) {
-            // Ble akkurat ferdig med init loop
-            this.fixedLoop = new Float32Array(this.initLoop);
-            this.initLoop = [];
-        }
+        switch (this.state) {
+            case State.InitLoop:
+                if (this.loopLength + input.length > this.loop.length) {
+                    // FIXME: Send event om at vi endret state internt
+                    // TODO: Ta opp helt opp til vi når enden av bufferet
+                    this.handleToggleRecord();
+                } else {
+                    this.loop.set(input, this.loopLength);
 
-        if (!this.isRecording) {
-            // Vi er i standby
-            if (this.fixedLoop.length > 0) {
+                    this.loopLength += input.length;
+
+                    break;
+                }
+
+            case State.Playback:
                 for (let i = 0; i < output.length; i++) {
-                    const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.fixedLoop.length;
+                    const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.loopLength;
 
-                    output[i] = this.fixedLoop[latencyAdjustedPos];
+                    output[i] = this.loop[latencyAdjustedPos];
 
                     this.currentLoopPos++;
-                    this.currentLoopPos %= this.fixedLoop.length;
+                    this.currentLoopPos %= this.loopLength;
                 }
-            }
-        } else {
-            if (this.fixedLoop.length === 0) {
-                // Vi er i init loop
-                this.initLoop.push(...input);
-            } else {
-                // Vi er i overdub
+
+                break;
+
+            case State.Overdub:
                 for (let i = 0; i < output.length; i++) {
-                    const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.fixedLoop.length;
+                    const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.loopLength;
 
-                    output[i] = this.fixedLoop[latencyAdjustedPos];
+                    output[i] = this.loop[latencyAdjustedPos];
 
-                    this.fixedLoop[this.currentLoopPos] += input[i];
+                    this.loop[this.currentLoopPos] += input[i];
 
                     this.currentLoopPos++;
-                    this.currentLoopPos %= this.fixedLoop.length;
+                    this.currentLoopPos %= this.loopLength;
                 }
-            }
+
+                break;
         }
 
-        // TODO: Ikke send denne hver process chunk, brukes bare for å oppdatere ui
-        if (this.fixedLoop.length > 0) this.port.postMessage(this.currentLoopPos / this.fixedLoop.length);
+        // TODO: Finn en bedre måte å bestemme når denne eventen skal fires
+        if (this.currentLoopPos % (128 * 16) == 0 && this.loopLength > 0)
+            this.port.postMessage(this.currentLoopPos / this.loopLength);
 
         return true;
     }

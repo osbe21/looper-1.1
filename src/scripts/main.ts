@@ -25,6 +25,7 @@ async function toggleAudioContext() {
 async function initAudioContext(): Promise<AudioContext> {
     // TODO: Pass på at stream og audioCtx bruker samme samplerate (vet ikke hvilken som skal få 1. pri)
 
+    // TODO: Gjør at man kan velge/fjerne disse når man setter opp
     const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
             channelCount: 1,
@@ -59,6 +60,10 @@ async function initAudioContext(): Promise<AudioContext> {
         // FIXME: settings.latency er ikke tilgjenglig i safari
         // @ts-ignore
         const inputLatency = settings.latency;
+
+        console.log(`Input latency: ${Math.round(inputLatency * 1000)}ms`);
+        console.log(`Base latency: ${Math.round(audioCtx.baseLatency * 1000)}ms`);
+        console.log(`Output latency: ${Math.round(audioCtx.outputLatency * 1000)}ms`);
 
         const latency = inputLatency + audioCtx.baseLatency + audioCtx.outputLatency;
 
