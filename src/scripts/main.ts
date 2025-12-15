@@ -52,15 +52,30 @@ async function initAudioContext(): Promise<AudioContext> {
 
     looperNode.port.onmessage = (e) => (loopProgress.value = e.data);
 
+    setInterval(() => {
+        const audioTrack = stream.getAudioTracks()[0];
+        const settings = audioTrack.getSettings();
+
+        // FIXME: settings.latency er ikke tilgjenglig i safari
+        // @ts-ignore
+        const inputLatency = settings.latency;
+
+        const latency = inputLatency + audioCtx.baseLatency + audioCtx.outputLatency;
+
+        document.getElementById("latency-hint")!.innerHTML = `Latency ${Math.round(latency * 1000)}ms`;
+
+        const latencyOffset = Math.floor(latency * audioCtx.sampleRate);
+
+        // TODO: endre denne til en automation, for å unngå potensiell popping i lyden
+        looperNode.parameters.get("latencyOffset")!.value = latencyOffset;
+    }, 500);
+
     let isRecording = false;
 
     recordButton.addEventListener("click", () => {
         if (!isRecording) {
             recordButton.innerHTML = "Stop recording";
 
-            const latencyOffset = Math.floor(audioCtx.outputLatency * audioCtx.sampleRate);
-
-            looperNode.parameters.get("latencyOffset")!.value = latencyOffset;
             looperNode.port.postMessage("toggleRecord");
         } else {
             recordButton.innerHTML = "Start recording";
