@@ -14,6 +14,7 @@ type WorkletToMainMessage = { type: "set-state"; value: number } | { type: "set-
 export default function useLooper() {
     const [state, setState] = useState(LooperState.Empty);
     const [loopProgress, setLoopProgress] = useState(0);
+    const [latency, setLatency] = useState(0);
     const [audioContextState, setAudioContextState] = useState<AudioContextState | null>(null);
 
     const audioCtxRef = useRef<AudioContext | null>(null);
@@ -23,6 +24,7 @@ export default function useLooper() {
 
     useEffect(() => {
         let cancelled = false;
+        let latencyUpdateInterval: ReturnType<typeof setInterval>;
 
         async function initAudioContext() {
             try {
@@ -68,6 +70,33 @@ export default function useLooper() {
 
                 looperNodeRef.current.connect(audioCtxRef.current.destination);
 
+                const micTrack = micStreamRef.current.getAudioTracks()[0];
+                latencyUpdateInterval = setInterval(() => {
+                    if (!audioCtxRef.current || !looperNodeRef.current) return;
+
+                    const micTrackSettings = micTrack.getSettings();
+
+                    // FIXME: settings.latency er ikke tilgjenglig i safari
+                    // @ts-ignore
+                    const inputLatency = micTrackSettings.latency;
+                    const baseLatency = audioCtxRef.current.baseLatency;
+                    const outputLatency = audioCtxRef.current.outputLatency;
+
+                    console.log(`Input latency: ${Math.round(inputLatency * 1000)}ms`);
+                    console.log(`Base latency: ${Math.round(baseLatency * 1000)}ms`);
+                    console.log(`Output latency: ${Math.round(outputLatency * 1000)}ms`);
+
+                    // TODO: offset opptaket med inputLatency-en
+                    const latency = inputLatency + baseLatency + outputLatency;
+
+                    setLatency(latency);
+
+                    const latencyOffset = Math.floor(latency * audioCtxRef.current.sampleRate);
+
+                    // TODO: endre denne til en automation, for å unngå potensiell popping i lyden
+                    looperNodeRef.current.parameters.get("latencyOffset")!.value = latencyOffset;
+                }, 1000);
+
                 if (cancelled) cleanUp();
             } catch (error) {
                 cleanUp();
@@ -83,10 +112,13 @@ export default function useLooper() {
 
             cancelled = true;
 
+            clearInterval(latencyUpdateInterval);
+
             audioCtxRef.current?.close();
             micStreamRef.current?.getTracks().forEach((track) => track.stop());
 
             setState(LooperState.Empty);
+            setLatency(0);
             setLoopProgress(0);
         }
 
@@ -114,6 +146,7 @@ export default function useLooper() {
     return {
         state,
         loopProgress,
+        latency,
         audioContextState,
         pokeAudioContext,
         footswitch,

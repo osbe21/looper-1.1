@@ -1,7 +1,8 @@
 import useLooper, { LooperState } from "../hooks/useLooper";
 
 export default function LooperPedal() {
-    const { state, loopProgress, audioContextState, pokeAudioContext, footswitch, setMicrophoneSettings } = useLooper();
+    const { state, loopProgress, latency, audioContextState, pokeAudioContext, footswitch, setMicrophoneSettings } =
+        useLooper();
 
     const isRecording = state === LooperState.InitRecording || state === LooperState.Overdubbing;
 
@@ -14,6 +15,8 @@ export default function LooperPedal() {
 
     return (
         <>
+            <h2>Latency {Math.round(latency * 1000)}ms</h2>
+
             <button onClick={footswitch} className="border cursor-pointer">
                 {isRecording ? "Stop recording" : "Start recording"}
             </button>
