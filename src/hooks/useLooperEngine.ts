@@ -11,7 +11,7 @@ export const enum LooperState {
 type MainToWorkletMessage = { type: "footswitch" };
 type WorkletToMainMessage = { type: "set-state"; value: number } | { type: "set-loop-progress"; value: number };
 
-export default function useLooper() {
+export default function useLooperEngine() {
     const [state, setState] = useState(LooperState.Empty);
     const [loopProgress, setLoopProgress] = useState(0);
     const [latency, setLatency] = useState(0);
