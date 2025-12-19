@@ -11,7 +11,7 @@ export const enum LooperState {
 type MainToWorkletMessage = { type: "footswitch" };
 type WorkletToMainMessage = { type: "set-state"; value: number } | { type: "set-loop-progress"; value: number };
 
-export default function useLooperEngine() {
+export default function useLooperEngine(useSineInput = false) {
     const [state, setState] = useState(LooperState.Empty);
     const [loopProgress, setLoopProgress] = useState(0);
     const [latency, setLatency] = useState(0);
@@ -42,9 +42,20 @@ export default function useLooperEngine() {
                     },
                 });
 
-                const streamNode = new MediaStreamAudioSourceNode(audioCtxRef.current, {
-                    mediaStream: micStreamRef.current,
-                });
+                let streamNode: AudioNode;
+
+                if (useSineInput) {
+                    const oscillatorNode = new OscillatorNode(audioCtxRef.current, {
+                        frequency: Math.random() * 440 + 440,
+                    });
+                    oscillatorNode.start();
+
+                    streamNode = oscillatorNode;
+                } else {
+                    streamNode = new MediaStreamAudioSourceNode(audioCtxRef.current, {
+                        mediaStream: micStreamRef.current,
+                    });
+                }
 
                 await audioCtxRef.current.audioWorklet.addModule(looperProcessorURL);
 
@@ -66,9 +77,13 @@ export default function useLooperEngine() {
                     }
                 };
 
+                gainNodeRef.current = new GainNode(audioCtxRef.current);
+
                 streamNode.connect(looperNodeRef.current);
 
-                looperNodeRef.current.connect(audioCtxRef.current.destination);
+                looperNodeRef.current.connect(gainNodeRef.current);
+
+                gainNodeRef.current.connect(audioCtxRef.current.destination);
 
                 const micTrack = micStreamRef.current.getAudioTracks()[0];
                 latencyUpdateInterval = setInterval(() => {
@@ -134,6 +149,10 @@ export default function useLooperEngine() {
         looperNodeRef.current?.port.postMessage(message);
     }
 
+    function setGain(value: number) {
+        if (gainNodeRef.current) gainNodeRef.current.gain.exponentialRampToValueAtTime(value, 0.01);
+    }
+
     function setMicrophoneSettings(echoCancellation?: boolean, noiseSuppression?: boolean) {
         micStreamRef.current?.getTracks().forEach((track) =>
             track.applyConstraints({
@@ -150,6 +169,7 @@ export default function useLooperEngine() {
         audioContextState,
         pokeAudioContext,
         footswitch,
+        setGain,
         setMicrophoneSettings,
     };
 }

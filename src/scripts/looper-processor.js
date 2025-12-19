@@ -16,7 +16,9 @@ class LooperProcessor extends AudioWorkletProcessor {
                 name: "latencyOffset", // Hvor høy output latency-en er, i samples
                 defaultValue: 0,
                 minValue: 0,
-                automationRate: "k-rate", // TODO: endre til a-rate, slik at vi kan automate
+                // TODO: endre til a-rate, slik at vi kan automate
+                // Man merker tydelig popping når inputen er en sinusbølge
+                automationRate: "k-rate",
             },
         ];
     }

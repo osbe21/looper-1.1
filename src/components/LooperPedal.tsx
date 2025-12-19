@@ -1,10 +1,26 @@
+import { useState, type ChangeEvent } from "react";
 import useLooperEngine, { LooperState } from "../hooks/useLooperEngine";
 
 export default function LooperPedal() {
-    const { state, loopProgress, latency, audioContextState, pokeAudioContext, footswitch, setMicrophoneSettings } =
-        useLooperEngine();
+    const {
+        state,
+        loopProgress,
+        latency,
+        audioContextState,
+        pokeAudioContext,
+        footswitch,
+        setGain,
+        setMicrophoneSettings,
+    } = useLooperEngine(true);
+
+    const [gainKnob, setGainKnob] = useState(1);
 
     const isRecording = state === LooperState.InitRecording || state === LooperState.Overdubbing;
+
+    function handleGainChange(e: ChangeEvent<HTMLInputElement>) {
+        setGain(e.target.valueAsNumber);
+        setGainKnob(e.target.valueAsNumber);
+    }
 
     if (audioContextState !== "running")
         return (
@@ -21,7 +37,17 @@ export default function LooperPedal() {
                 {isRecording ? "Stop recording" : "Start recording"}
             </button>
 
+            <br />
+
             <progress value={loopProgress} max={1}></progress>
+
+            <br />
+
+            <label>
+                Gain: {gainKnob}
+                <br />
+                <input value={gainKnob} onChange={handleGainChange} type="range" min={0.01} max={1} step={0.01} />
+            </label>
 
             {/* <div className="flex flex-col justify-evenly items-center w-72 h-110 rounded-2xl border-2"> */}
             {/* Title */}
