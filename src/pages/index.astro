@@ -14,15 +14,9 @@ import LooperPedal from "../components/LooperPedal";
     <body>
         <h1>Looper</h1>
         <p id="latency-hint">Latency:</p>
-        <button id="init-context-button" class="border cursor-pointer">Init audio context</button>
-        <button id="record-button" class="border cursor-pointer">Start recording</button>
-        <progress id="loop-progress" value="0" max="1"></progress>
-        <script>
-            import "../scripts/main";
-        </script>
 
         <div class="m-10">
-            <LooperPedal />
+            <LooperPedal client:load />
         </div>
     </body>
 </html>

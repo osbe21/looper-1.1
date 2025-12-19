@@ -23,23 +23,24 @@ async function toggleAudioContext() {
 }
 
 async function initAudioContext(): Promise<AudioContext> {
-    // TODO: Pass på at stream og audioCtx bruker samme samplerate (vet ikke hvilken som skal få 1. pri)
+    const audioCtx = new AudioContext({ latencyHint: 0 });
 
-    // TODO: Gjør at man kan velge/fjerne disse når man setter opp
+    // TODO: Gjør at man kan velge/fjerne disse
     const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
+            sampleRate: audioCtx.sampleRate,
             channelCount: 1,
             autoGainControl: false,
             echoCancellation: false,
             noiseSuppression: false,
+            // @ts-ignore Støttes ikke av safari
+            latency: 0,
         },
     });
 
-    const audioCtx = new AudioContext({ latencyHint: 0 });
+    const streamNode = new MediaStreamAudioSourceNode(audioCtx, { mediaStream: stream });
 
     await audioCtx.audioWorklet.addModule(looperProcessorURL);
-
-    const streamNode = new MediaStreamAudioSourceNode(audioCtx, { mediaStream: stream });
 
     const looperNode = new AudioWorkletNode(audioCtx, "looper-processor", {
         numberOfInputs: 1,
@@ -65,6 +66,7 @@ async function initAudioContext(): Promise<AudioContext> {
         console.log(`Base latency: ${Math.round(audioCtx.baseLatency * 1000)}ms`);
         console.log(`Output latency: ${Math.round(audioCtx.outputLatency * 1000)}ms`);
 
+        // TODO: offset opptaket med inputLatency-en
         const latency = inputLatency + audioCtx.baseLatency + audioCtx.outputLatency;
 
         document.getElementById("latency-hint")!.innerHTML = `Latency ${Math.round(latency * 1000)}ms`;
@@ -73,7 +75,7 @@ async function initAudioContext(): Promise<AudioContext> {
 
         // TODO: endre denne til en automation, for å unngå potensiell popping i lyden
         looperNode.parameters.get("latencyOffset")!.value = latencyOffset;
-    }, 500);
+    }, 1000);
 
     let isRecording = false;
 
