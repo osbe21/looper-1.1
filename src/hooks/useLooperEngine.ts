@@ -11,7 +11,87 @@ export const enum LooperState {
 type MainToWorkletMessage = { type: "footswitch" };
 type WorkletToMainMessage = { type: "set-state"; value: number } | { type: "set-loop-progress"; value: number };
 
-export default function useLooperEngine(useSineInput = false) {
+function createAudioContext() {
+    return new AudioContext({ latencyHint: 0 });
+}
+
+async function getMicStream(audioCtx: AudioContext) {
+    return await navigator.mediaDevices.getUserMedia({
+        audio: {
+            sampleRate: audioCtx.sampleRate,
+            channelCount: 1,
+            autoGainControl: false,
+            echoCancellation: true,
+            noiseSuppression: true,
+            // @ts-ignore Støttes ikke av safari
+            latency: 0,
+        },
+    });
+}
+
+function createSourceNode(audioCtx: AudioContext, micStream: MediaStream, useSine = false) {
+    if (useSine) {
+        const oscillatorNode = new OscillatorNode(audioCtx);
+        oscillatorNode.start();
+
+        return oscillatorNode;
+    } else {
+        return new MediaStreamAudioSourceNode(audioCtx, {
+            mediaStream: micStream,
+        });
+    }
+}
+
+async function createLooperNode(audioCtx: AudioContext, onRecieveMessage: (data: WorkletToMainMessage) => void) {
+    await audioCtx.audioWorklet.addModule(looperProcessorURL);
+
+    const looperNode = new AudioWorkletNode(audioCtx, "looper-processor", {
+        numberOfInputs: 1,
+        numberOfOutputs: 1,
+        outputChannelCount: [1],
+    });
+
+    looperNode.port.onmessage = (e) => onRecieveMessage(e.data as WorkletToMainMessage);
+
+    return looperNode;
+}
+
+function setLatencyCorrectionInterval(
+    audioCtx: AudioContext,
+    micStream: MediaStream,
+    looperNode: AudioWorkletNode,
+    onLatencyCalculated?: (latency: number) => void
+) {
+    const micTrack = micStream.getAudioTracks()[0];
+
+    return setInterval(() => {
+        if (!audioCtx || !micStream || !looperNode) return;
+
+        const micTrackSettings = micTrack.getSettings();
+
+        // FIXME: settings.latency er ikke tilgjenglig i safari
+        // @ts-ignore
+        const inputLatency = micTrackSettings.latency;
+        const baseLatency = audioCtx.baseLatency;
+        const outputLatency = audioCtx.outputLatency;
+
+        console.log(`Input latency: ${Math.round(inputLatency * 1000)}ms`);
+        console.log(`Base latency: ${Math.round(baseLatency * 1000)}ms`);
+        console.log(`Output latency: ${Math.round(outputLatency * 1000)}ms`);
+
+        // TODO: offset opptaket med inputLatency-en
+        const latency = inputLatency + baseLatency + outputLatency;
+
+        if (onLatencyCalculated) onLatencyCalculated(latency);
+
+        const latencyOffset = Math.floor(latency * audioCtx.sampleRate);
+
+        // TODO: endre denne til en automation, for å unngå potensiell popping i lyden
+        looperNode.parameters.get("latencyOffset")!.value = latencyOffset;
+    }, 1000);
+}
+
+export default function useLooperEngine() {
     const [state, setState] = useState(LooperState.Empty);
     const [loopProgress, setLoopProgress] = useState(0);
     const [latency, setLatency] = useState(0);
@@ -24,97 +104,35 @@ export default function useLooperEngine(useSineInput = false) {
 
     useEffect(() => {
         let cancelled = false;
-        let latencyUpdateInterval: ReturnType<typeof setInterval>;
+        let audioCtx: AudioContext;
+        let micStream: MediaStream;
+        let latencyCorrectionInterval: ReturnType<typeof setInterval>;
 
         async function initAudioContext() {
             try {
-                audioCtxRef.current = new AudioContext({ latencyHint: 0 });
+                audioCtx = createAudioContext();
+                micStream = await getMicStream(audioCtx);
+                const streamNode = createSourceNode(audioCtx, micStream, true);
+                const looperNode = await createLooperNode(audioCtx, onRecieveMessage);
+                const gainNode = new GainNode(audioCtx);
 
-                micStreamRef.current = await navigator.mediaDevices.getUserMedia({
-                    audio: {
-                        sampleRate: audioCtxRef.current.sampleRate,
-                        channelCount: 1,
-                        autoGainControl: false,
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        // @ts-ignore Støttes ikke av safari
-                        latency: 0,
-                    },
-                });
+                streamNode.connect(looperNode);
+                looperNode.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
 
-                let streamNode: AudioNode;
+                latencyCorrectionInterval = setLatencyCorrectionInterval(audioCtx, micStream, looperNode, setLatency);
 
-                if (useSineInput) {
-                    const oscillatorNode = new OscillatorNode(audioCtxRef.current, {
-                        frequency: Math.random() * 440 + 440,
-                    });
-                    oscillatorNode.start();
+                if (cancelled) throw Error("Component was unmounted before AudioContext initialized");
 
-                    streamNode = oscillatorNode;
-                } else {
-                    streamNode = new MediaStreamAudioSourceNode(audioCtxRef.current, {
-                        mediaStream: micStreamRef.current,
-                    });
-                }
-
-                await audioCtxRef.current.audioWorklet.addModule(looperProcessorURL);
-
-                looperNodeRef.current = new AudioWorkletNode(audioCtxRef.current, "looper-processor", {
-                    numberOfInputs: 1,
-                    numberOfOutputs: 1,
-                    outputChannelCount: [1],
-                });
-
-                looperNodeRef.current.port.onmessage = (e) => {
-                    const data = e.data as WorkletToMainMessage;
-
-                    switch (data.type) {
-                        case "set-state":
-                            setState(data.value as LooperState);
-                            break;
-                        case "set-loop-progress":
-                            setLoopProgress(data.value);
-                    }
-                };
-
-                gainNodeRef.current = new GainNode(audioCtxRef.current);
-
-                streamNode.connect(looperNodeRef.current);
-
-                looperNodeRef.current.connect(gainNodeRef.current);
-
-                gainNodeRef.current.connect(audioCtxRef.current.destination);
-
-                const micTrack = micStreamRef.current.getAudioTracks()[0];
-                latencyUpdateInterval = setInterval(() => {
-                    if (!audioCtxRef.current || !looperNodeRef.current) return;
-
-                    const micTrackSettings = micTrack.getSettings();
-
-                    // FIXME: settings.latency er ikke tilgjenglig i safari
-                    // @ts-ignore
-                    const inputLatency = micTrackSettings.latency;
-                    const baseLatency = audioCtxRef.current.baseLatency;
-                    const outputLatency = audioCtxRef.current.outputLatency;
-
-                    console.log(`Input latency: ${Math.round(inputLatency * 1000)}ms`);
-                    console.log(`Base latency: ${Math.round(baseLatency * 1000)}ms`);
-                    console.log(`Output latency: ${Math.round(outputLatency * 1000)}ms`);
-
-                    // TODO: offset opptaket med inputLatency-en
-                    const latency = inputLatency + baseLatency + outputLatency;
-
-                    setLatency(latency);
-
-                    const latencyOffset = Math.floor(latency * audioCtxRef.current.sampleRate);
-
-                    // TODO: endre denne til en automation, for å unngå potensiell popping i lyden
-                    looperNodeRef.current.parameters.get("latencyOffset")!.value = latencyOffset;
-                }, 1000);
-
-                if (cancelled) cleanUp();
+                audioCtxRef.current = audioCtx;
+                micStreamRef.current = micStream;
+                looperNodeRef.current = looperNode;
+                gainNodeRef.current = gainNode;
             } catch (error) {
-                cleanUp();
+                micStream?.getTracks().forEach((track) => track.stop());
+                audioCtx?.close();
+
+                clearInterval(latencyCorrectionInterval);
 
                 throw error;
             }
@@ -122,54 +140,58 @@ export default function useLooperEngine(useSineInput = false) {
 
         initAudioContext();
 
-        function cleanUp() {
-            console.log("Cleanup");
-
+        return () => {
             cancelled = true;
 
-            clearInterval(latencyUpdateInterval);
-
-            audioCtxRef.current?.close();
             micStreamRef.current?.getTracks().forEach((track) => track.stop());
+            audioCtxRef.current?.close();
+
+            clearInterval(latencyCorrectionInterval);
 
             setState(LooperState.Empty);
             setLatency(0);
             setLoopProgress(0);
-        }
-
-        return cleanUp;
+        };
     }, []);
 
-    function pokeAudioContext() {
-        audioCtxRef.current?.resume().finally(() => setAudioContextState(audioCtxRef.current?.state ?? null));
+    function onRecieveMessage(data: WorkletToMainMessage) {
+        switch (data.type) {
+            case "set-state":
+                setState(data.value);
+                break;
+            case "set-loop-progress":
+                setLoopProgress(data.value);
+        }
     }
 
-    function footswitch() {
-        const message: MainToWorkletMessage = { type: "footswitch" };
-        looperNodeRef.current?.port.postMessage(message);
-    }
-
-    function setGain(value: number) {
-        if (gainNodeRef.current) gainNodeRef.current.gain.exponentialRampToValueAtTime(value, 0.01);
-    }
-
-    function setMicrophoneSettings(echoCancellation?: boolean, noiseSuppression?: boolean) {
-        micStreamRef.current?.getTracks().forEach((track) =>
-            track.applyConstraints({
-                echoCancellation,
-                noiseSuppression,
-            })
-        );
-    }
-
-    return {
+    const api = {
         state,
         loopProgress,
         latency,
         audioContextState,
-        pokeAudioContext,
-        footswitch,
-        setGain,
-        setMicrophoneSettings,
+
+        pokeAudioContext: function () {
+            audioCtxRef.current?.resume().finally(() => setAudioContextState(audioCtxRef.current?.state ?? null));
+        },
+
+        footswitch: function () {
+            const message: MainToWorkletMessage = { type: "footswitch" };
+            looperNodeRef.current?.port.postMessage(message);
+        },
+
+        setGain: function (value: number) {
+            if (gainNodeRef.current) gainNodeRef.current.gain.exponentialRampToValueAtTime(value, 0.01);
+        },
+
+        setMicrophoneSettings: function (echoCancellation?: boolean, noiseSuppression?: boolean) {
+            micStreamRef.current?.getTracks().forEach((track) =>
+                track.applyConstraints({
+                    echoCancellation,
+                    noiseSuppression,
+                })
+            );
+        },
     };
+
+    return api;
 }
