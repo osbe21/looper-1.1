@@ -8,7 +8,7 @@ import { Button } from "./ui/button";
 export default function LooperPedal() {
     const {
         looperState,
-        loopProgress,
+        looperProgress,
         latency,
         audioContextState,
         resumeAudioContext,
@@ -19,7 +19,7 @@ export default function LooperPedal() {
 
     const [gain, setGain] = useState(1);
 
-    const isRecording = looperState == "init recording" || looperState == "overdubbing";
+    const isRecording = looperState === "init recording" || looperState === "overdubbing";
 
     useEffect(() => {
         window.addEventListener("click", resumeAudioContext, { once: true });
@@ -37,7 +37,7 @@ export default function LooperPedal() {
             <div className="w-86 h-164 p-4 flex flex-col justify-between items-center border bg-card rounded-2xl shadow-2xl">
                 <div className="size-54 m-6">
                     <CircularProgressbarWithChildren
-                        value={loopProgress}
+                        value={looperProgress}
                         maxValue={1}
                         styles={buildStyles({
                             strokeLinecap: "butt",

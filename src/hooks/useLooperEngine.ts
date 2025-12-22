@@ -8,7 +8,7 @@ type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: 
 
 export default function useLooperEngine() {
     const [looperState, setLooperState] = useState<LooperState>("empty");
-    const [loopProgress, setLoopProgress] = useState(0);
+    const [looperProgress, setLooperProgress] = useState(0);
     const [latency, setLatency] = useState(0);
     const [audioContextState, setAudioContextState] = useState<AudioContextState | null>(null);
 
@@ -74,13 +74,13 @@ export default function useLooperEngine() {
                 setLooperState(data.value);
                 break;
             case "set-loop-progress":
-                setLoopProgress(data.value);
+                setLooperProgress(data.value);
         }
     }
 
     return {
         looperState,
-        loopProgress,
+        looperProgress,
         latency,
         audioContextState,
 
