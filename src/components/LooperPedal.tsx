@@ -4,6 +4,7 @@ import { buildStyles, CircularProgressbarWithChildren } from "react-circular-pro
 import "react-circular-progressbar/dist/styles.css";
 import { Knob } from "./Knob";
 import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
 
 export default function LooperPedal() {
     const {
@@ -20,6 +21,13 @@ export default function LooperPedal() {
     const [gain, setGain] = useState(1);
 
     const isRecording = looperState === "init recording" || looperState === "overdubbing";
+
+    const ledLights: Record<LooperState, string> = {
+        empty: "bg-neutral-500",
+        "init recording": "bg-red-500",
+        playing: "bg-green-500",
+        overdubbing: "bg-orange-500",
+    };
 
     useEffect(() => {
         window.addEventListener("click", resumeAudioContext, { once: true });
@@ -47,7 +55,7 @@ export default function LooperPedal() {
                     >
                         <p className="text-xs font-mono">Latency: {Math.round(latency * 1000)}ms</p>
                         <div className="flex justify-center items-center gap-2">
-                            <div className="size-3 rounded-full bg-green-500"></div>
+                            <div className={cn("size-3 rounded-full", ledLights[looperState])}></div>
                             <p className="font-mono">{looperState}</p>
                         </div>
                     </CircularProgressbarWithChildren>
