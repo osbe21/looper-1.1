@@ -1,18 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import looperProcessorURL from "../scripts/looper-processor?url";
 
-export const enum LooperState {
-    Empty,
-    InitRecording,
-    Playing,
-    Overdubbing,
-}
+export type LooperState = "empty" | "init recording" | "playing" | "overdubbing";
 
 type MainToWorkletMessage = { type: "footswitch" };
-type WorkletToMainMessage = { type: "set-state"; value: number } | { type: "set-loop-progress"; value: number };
+type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: "set-loop-progress"; value: number };
 
 export default function useLooperEngine() {
-    const [looperState, setLooperState] = useState(LooperState.Empty);
+    const [looperState, setLooperState] = useState<LooperState>("empty");
     const [loopProgress, setLoopProgress] = useState(0);
     const [latency, setLatency] = useState(0);
     const [audioContextState, setAudioContextState] = useState<AudioContextState | null>(null);

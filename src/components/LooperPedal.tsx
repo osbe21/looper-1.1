@@ -1,5 +1,5 @@
 import { useEffect, useState, type ChangeEvent } from "react";
-import useLooperEngine, { LooperState } from "../hooks/useLooperEngine";
+import useLooperEngine, { type LooperState } from "../hooks/useLooperEngine";
 import { buildStyles, CircularProgressbarWithChildren } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { Knob } from "./Knob";
@@ -19,7 +19,7 @@ export default function LooperPedal() {
 
     const [gain, setGain] = useState(1);
 
-    const isRecording = looperState == LooperState.InitRecording || looperState == LooperState.Overdubbing;
+    const isRecording = looperState == "init recording" || looperState == "overdubbing";
 
     useEffect(() => {
         window.addEventListener("click", resumeAudioContext, { once: true });

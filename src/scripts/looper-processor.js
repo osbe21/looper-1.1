@@ -1,12 +1,5 @@
 // Typescript har ikke full inference for AudioWorklets, så filen må skrives i js for å unngå // @ts-ignore overalt
 
-const State = {
-    Empty: 0,
-    InitRecording: 1,
-    Playing: 2,
-    Overdubbing: 3,
-};
-
 class LooperProcessor extends AudioWorkletProcessor {
     static maxSamples = sampleRate * 60 * 5; // 5 minutter
 
@@ -23,7 +16,7 @@ class LooperProcessor extends AudioWorkletProcessor {
         ];
     }
 
-    state = State.Empty;
+    state = "empty";
     loop = new Float32Array(LooperProcessor.maxSamples);
     loopLength = 0;
     currentLoopPos = 0;
@@ -38,20 +31,18 @@ class LooperProcessor extends AudioWorkletProcessor {
 
     handleFootswitch() {
         switch (this.state) {
-            case State.Empty:
-                this.state = State.InitRecording;
+            case "empty":
+                this.state = "init recording";
                 break;
-            case State.InitRecording:
-                console.log("Attempting to stop recording");
+            case "init recording":
                 if (this.loopLength === 0) return;
-                console.log("Stopped recording");
-                this.state = State.Playing;
+                this.state = "playing";
                 break;
-            case State.Playing:
-                this.state = State.Overdubbing;
+            case "playing":
+                this.state = "overdubbing";
                 break;
-            case State.Overdubbing:
-                this.state = State.Playing;
+            case "overdubbing":
+                this.state = "playing";
                 break;
         }
 
@@ -59,7 +50,7 @@ class LooperProcessor extends AudioWorkletProcessor {
     }
 
     reset() {
-        this.state = State.Empty;
+        this.state = "empty";
         this.loop = new Float32Array(LooperProcessor.maxSamples);
         this.loopLength = 0;
         this.currentLoopPos = 0;
@@ -72,7 +63,7 @@ class LooperProcessor extends AudioWorkletProcessor {
         const output = outputs[0][0];
 
         switch (this.state) {
-            case State.InitRecording:
+            case "init recording":
                 if (this.loopLength + input.length > this.loop.length) {
                     // TODO: Ta opp helt opp til vi når enden av bufferet
                     this.handleFootswitch();
@@ -87,7 +78,7 @@ class LooperProcessor extends AudioWorkletProcessor {
                     break;
                 }
 
-            case State.Playing:
+            case "playing":
                 for (let i = 0; i < output.length; i++) {
                     const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.loopLength;
 
@@ -99,7 +90,7 @@ class LooperProcessor extends AudioWorkletProcessor {
 
                 break;
 
-            case State.Overdubbing:
+            case "overdubbing":
                 for (let i = 0; i < output.length; i++) {
                     const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.loopLength;
 
