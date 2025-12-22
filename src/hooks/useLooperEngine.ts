@@ -89,8 +89,8 @@ export default function useLooperEngine() {
         latency,
         audioContextState,
 
-        pokeAudioContext: function () {
-            audioCtxRef.current?.resume().finally(() => setAudioContextState(audioCtxRef.current?.state ?? null));
+        resumeAudioContext: function () {
+            audioCtxRef.current?.resume();
         },
 
         footswitch: function () {
