@@ -3,7 +3,7 @@ import useLooperEngine, { LooperState } from "../hooks/useLooperEngine";
 
 export default function LooperPedal() {
     const {
-        state,
+        looperState,
         loopProgress,
         latency,
         audioContextState,
@@ -15,7 +15,7 @@ export default function LooperPedal() {
 
     const [gainKnob, setGainKnob] = useState(1);
 
-    const isRecording = state === LooperState.InitRecording || state === LooperState.Overdubbing;
+    const isRecording = looperState === LooperState.InitRecording || looperState === LooperState.Overdubbing;
 
     function handleGainChange(e: ChangeEvent<HTMLInputElement>) {
         setGain(e.target.valueAsNumber);
