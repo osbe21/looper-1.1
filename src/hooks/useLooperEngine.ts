@@ -100,7 +100,7 @@ export default function useLooperEngine() {
 
         setGain: function (value: number) {
             if (audioCtxRef.current && gainNodeRef.current)
-                gainNodeRef.current.gain.exponentialRampToValueAtTime(value, audioCtxRef.current.currentTime + 0.05);
+                gainNodeRef.current.gain.linearRampToValueAtTime(value, audioCtxRef.current.currentTime + 0.05);
         },
 
         setMicrophoneSettings: function (echoCancellation?: boolean, noiseSuppression?: boolean) {

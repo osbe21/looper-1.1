@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import LooperPedal from "../components/LooperPedal";
+import App from "../components/App";
 ---
 
 <html lang="en">
@@ -11,9 +11,7 @@ import LooperPedal from "../components/LooperPedal";
         <meta name="generator" content={Astro.generator} />
         <title>Looper</title>
     </head>
-    <body class="bg-neutral-100">
-        <div class="h-dvh flex justify-center items-center">
-            <LooperPedal client:load />
-        </div>
+    <body>
+        <App client:load />
     </body>
 </html>
