@@ -54,7 +54,7 @@ export default function LooperPedal() {
                 </div>
 
                 <div className="flex flex-col justify-center items-center">
-                    <Knob value={gain} onChange={handleGainChange} />
+                    <Knob max={2} value={gain} onChange={handleGainChange} />
                     <p className="font-mono">Level</p>
                 </div>
 

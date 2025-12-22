@@ -1,20 +1,22 @@
 import { useState } from "react";
 
 interface Props {
-    value: number;
-    onChange: (value: number) => void;
+    min?: number;
+    max?: number;
+    value?: number;
+    onChange?: (value: number) => void;
 }
 
-export function Knob({ value, onChange }: Props) {
-    const rotation = -135 + value * 270;
+export function Knob({ min = 0, max = 1, value = 0, onChange = () => {} }: Props) {
+    const rotation = -135 + ((value - min) / (max - min)) * 270;
 
     return (
         <div className="relative size-20">
             {/* Invisible range input */}
             <input
                 type="range"
-                min={0}
-                max={1}
+                min={min}
+                max={max}
                 step="any"
                 value={value}
                 onChange={(e) => onChange(Number(e.target.value))}
