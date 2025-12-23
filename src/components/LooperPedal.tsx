@@ -28,7 +28,6 @@ export default function LooperPedal() {
         resumeAudioContext,
         footswitch,
         setGain: setLooperGain,
-        setMicrophoneSettings,
     } = useLooperEngine();
 
     const [gain, setGain] = useState(1);
