@@ -1,31 +1,31 @@
 // Typescript har ikke full inference for AudioWorklets, så filen må skrives i js for å unngå // @ts-ignore overalt
 
 class LooperProcessor extends AudioWorkletProcessor {
-    static maxSamples = sampleRate * 60 * 5; // 5 minutter
-
-    static get parameterDescriptors() {
-        return [
-            {
-                name: "latencyOffset", // Hvor høy output latency-en er, i samples
-                defaultValue: 0,
-                minValue: 0,
-                // TODO: endre til a-rate, slik at vi kan automate
-                // Man merker tydelig popping når inputen er en sinusbølge
-                automationRate: "k-rate",
-            },
-        ];
-    }
+    static bufferSize = sampleRate * 60 * 5; // 5 minutter
 
     state = "empty";
-    loop = new Float32Array(LooperProcessor.maxSamples);
+    loopBuffer = new Float32Array(LooperProcessor.bufferSize);
     loopLength = 0;
     currentLoopPos = 0;
 
-    constructor(...args) {
-        super(...args);
+    inputLatency = 0; // samples
+    outputLatency = 0; // samples
+
+    constructor(options) {
+        super();
 
         this.port.onmessage = (e) => {
-            if (e.data.type === "footswitch") this.handleFootswitch();
+            switch (e.data.type) {
+                case "footswitch":
+                    this.handleFootswitch();
+                    break;
+                case "set-input-latency":
+                    this.inputLatency = e.data.value;
+                    break;
+                case "set-output-latency":
+                    this.outputLatency = e.data.value;
+                    break;
+            }
         };
     }
 
@@ -51,63 +51,55 @@ class LooperProcessor extends AudioWorkletProcessor {
 
     reset() {
         this.state = "empty";
-        this.loop = new Float32Array(LooperProcessor.maxSamples);
+        this.loopBuffer.fill(0);
         this.loopLength = 0;
         this.currentLoopPos = 0;
     }
 
-    process(inputs, outputs, parameters) {
-        const latencyOffset = parameters.latencyOffset[0];
-
+    process(inputs, outputs) {
         const input = inputs[0][0];
         const output = outputs[0][0];
 
-        switch (this.state) {
-            case "init recording":
-                if (this.loopLength + input.length > this.loop.length) {
-                    // TODO: Ta opp helt opp til vi når enden av bufferet
-                    this.handleFootswitch();
-                } else {
+        for (let i = 0; i < output.length; i++) {
+            const latencyOffset = this.inputLatency + this.outputLatency;
+            const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.loopLength;
+
+            switch (this.state) {
+                case "init recording":
                     // TODO: offset opptaket med inputLatency-en
-                    this.loop.set(input, this.loopLength);
+                    this.loopBuffer[this.loopLength] = input[i];
 
-                    this.loopLength += input.length;
+                    this.loopLength++;
 
-                    console.log(this.loopLength);
+                    if (this.loopLength === this.loopBuffer.length) {
+                        this.handleFootswitch();
+                    }
 
                     break;
-                }
 
-            case "playing":
-                for (let i = 0; i < output.length; i++) {
-                    const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.loopLength;
-
-                    output[i] = this.loop[latencyAdjustedPos];
+                case "playing":
+                    output[i] = this.loopBuffer[latencyAdjustedPos];
 
                     this.currentLoopPos++;
                     this.currentLoopPos %= this.loopLength;
-                }
 
-                break;
+                    break;
 
-            case "overdubbing":
-                for (let i = 0; i < output.length; i++) {
-                    const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.loopLength;
+                case "overdubbing":
+                    output[i] = this.loopBuffer[latencyAdjustedPos];
 
-                    output[i] = this.loop[latencyAdjustedPos];
-
-                    this.loop[this.currentLoopPos] += input[i];
+                    this.loopBuffer[this.currentLoopPos] += input[i];
 
                     this.currentLoopPos++;
                     this.currentLoopPos %= this.loopLength;
-                }
 
-                break;
+                    break;
+            }
         }
 
         // TODO: Finn en bedre måte å bestemme når denne eventen skal fires
         if (this.currentLoopPos % (128 * 16) == 0 && this.loopLength > 0)
-            this.port.postMessage({ type: "set-loop-progress", value: this.currentLoopPos / this.loopLength });
+            this.port.postMessage({ type: "set-progress", value: this.currentLoopPos / this.loopLength });
 
         return true;
     }

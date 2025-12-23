@@ -3,8 +3,11 @@ import looperProcessorURL from "../scripts/looper-processor?url";
 
 export type LooperState = "empty" | "init recording" | "playing" | "overdubbing";
 
-type MainToWorkletMessage = { type: "footswitch" };
-type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: "set-loop-progress"; value: number };
+type MainToWorkletMessage =
+    | { type: "footswitch" }
+    | { type: "set-input-latency"; value: number }
+    | { type: "set-output-latency"; value: number };
+type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: "set-progress"; value: number };
 
 export default function useLooperEngine() {
     const [looperState, setLooperState] = useState<LooperState>("empty");
@@ -20,27 +23,20 @@ export default function useLooperEngine() {
         let cancelled = false;
         let audioCtx: AudioContext;
         let micStream: MediaStream;
-        let latencyCorrectionInterval: ReturnType<typeof setInterval>;
 
         async function initAudioContext() {
             try {
                 audioCtx = createAudioContext();
                 micStream = await getMicStream(audioCtx);
-
                 if (cancelled) return cancel();
-
                 const streamNode = createSourceNode(audioCtx, micStream, false);
                 const looperNode = await createLooperNode(audioCtx, onReceiveMessage);
-
                 if (cancelled) return cancel();
-
                 const gainNode = new GainNode(audioCtx);
 
                 streamNode.connect(looperNode);
                 looperNode.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
-
-                latencyCorrectionInterval = setLatencyCorrectionInterval(audioCtx, micStream, looperNode, setLatency);
 
                 audioCtxRef.current = audioCtx;
                 micStreamRef.current = micStream;
@@ -56,8 +52,6 @@ export default function useLooperEngine() {
         function cancel() {
             micStream?.getTracks().forEach((track) => track.stop());
             audioCtx?.close();
-
-            clearInterval(latencyCorrectionInterval);
         }
 
         return () => {
@@ -72,7 +66,7 @@ export default function useLooperEngine() {
             case "set-state":
                 setLooperState(data.value);
                 break;
-            case "set-loop-progress":
+            case "set-progress":
                 setLooperProgress(data.value);
         }
     }
@@ -83,7 +77,21 @@ export default function useLooperEngine() {
         latency,
 
         resumeAudioContext: function () {
-            audioCtxRef.current?.resume();
+            audioCtxRef.current?.resume().then(() => {
+                const { inputLatency, outputLatency } = calculateLatency(audioCtxRef.current!, micStreamRef.current!);
+
+                looperNodeRef.current?.port.postMessage({
+                    type: "set-input-latency",
+                    value: Math.floor(inputLatency * audioCtxRef.current!.sampleRate),
+                });
+
+                looperNodeRef.current?.port.postMessage({
+                    type: "set-output-latency",
+                    value: Math.floor(outputLatency * audioCtxRef.current!.sampleRate),
+                });
+
+                setLatency(inputLatency + outputLatency);
+            });
         },
 
         footswitch: function () {
@@ -93,17 +101,18 @@ export default function useLooperEngine() {
 
         setGain: function (value: number) {
             if (audioCtxRef.current && gainNodeRef.current)
-                gainNodeRef.current.gain.linearRampToValueAtTime(value, audioCtxRef.current.currentTime + 0.05);
+                gainNodeRef.current.gain.linearRampToValueAtTime(value, audioCtxRef.current.currentTime + 0.01);
         },
 
-        setMicrophoneSettings: function (echoCancellation?: boolean, noiseSuppression?: boolean) {
-            micStreamRef.current?.getTracks().forEach((track) =>
-                track.applyConstraints({
-                    echoCancellation,
-                    noiseSuppression,
-                })
-            );
-        },
+        // TODO: disse instillingene må restarte audio contexten
+        // setMicrophoneSettings: function (echoCancellation?: boolean, noiseSuppression?: boolean) {
+        //     micStreamRef.current?.getTracks().forEach((track) =>
+        //         track.applyConstraints({
+        //             echoCancellation,
+        //             noiseSuppression,
+        //         })
+        //     );
+        // },
     };
 }
 
@@ -138,51 +147,34 @@ function createSourceNode(audioCtx: AudioContext, micStream: MediaStream, useSin
     }
 }
 
+function calculateLatency(audioCtx: AudioContext, micStream: MediaStream) {
+    const micTrack = micStream.getAudioTracks()[0];
+    const micTrackSettings = micTrack.getSettings();
+
+    // FIXME: settings.latency er ikke tilgjenglig i safari
+    // @ts-ignore
+    const inputLatency = micTrackSettings.latency;
+    const baseLatency = audioCtx.baseLatency;
+    const outputLatency = audioCtx.outputLatency;
+
+    return {
+        inputLatency,
+        outputLatency: baseLatency + outputLatency,
+    };
+}
+
 async function createLooperNode(audioCtx: AudioContext, onReceiveMessage: (data: WorkletToMainMessage) => void) {
     await audioCtx.audioWorklet.addModule(looperProcessorURL);
 
+    // TODO: legg til parameter for loop buffer size
     const looperNode = new AudioWorkletNode(audioCtx, "looper-processor", {
         numberOfInputs: 1,
         numberOfOutputs: 1,
         outputChannelCount: [1],
+        processorOptions: {},
     });
 
     looperNode.port.onmessage = (e) => onReceiveMessage(e.data as WorkletToMainMessage);
 
     return looperNode;
-}
-
-function setLatencyCorrectionInterval(
-    audioCtx: AudioContext,
-    micStream: MediaStream,
-    looperNode: AudioWorkletNode,
-    onLatencyCalculated?: (latency: number) => void
-) {
-    const micTrack = micStream.getAudioTracks()[0];
-
-    return setInterval(() => {
-        if (!audioCtx || !micStream || !looperNode) return;
-
-        const micTrackSettings = micTrack.getSettings();
-
-        // FIXME: settings.latency er ikke tilgjenglig i safari
-        // @ts-ignore
-        const inputLatency = micTrackSettings.latency;
-        const baseLatency = audioCtx.baseLatency;
-        const outputLatency = audioCtx.outputLatency;
-
-        // console.log(`Input latency: ${Math.round(inputLatency * 1000)}ms`);
-        // console.log(`Base latency: ${Math.round(baseLatency * 1000)}ms`);
-        // console.log(`Output latency: ${Math.round(outputLatency * 1000)}ms`);
-
-        // TODO: offset opptaket med inputLatency-en
-        const latency = inputLatency + baseLatency + outputLatency;
-
-        if (onLatencyCalculated) onLatencyCalculated(latency);
-
-        const latencyOffset = Math.floor(latency * audioCtx.sampleRate);
-
-        // TODO: endre denne til en automation, for å unngå potensiell popping i lyden
-        looperNode.parameters.get("latencyOffset")!.value = latencyOffset;
-    }, 1000);
 }
