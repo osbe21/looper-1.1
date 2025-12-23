@@ -1,10 +1,8 @@
 // Typescript har ikke full inference for AudioWorklets, så filen må skrives i js for å unngå // @ts-ignore overalt
 
 class LooperProcessor extends AudioWorkletProcessor {
-    static bufferSize = sampleRate * 60 * 5; // 5 minutter
-
     state = "empty";
-    loopBuffer = new Float32Array(LooperProcessor.bufferSize);
+    loopBuffer = new Float32Array();
     loopLength = 0;
     currentLoopPos = 0;
 
@@ -13,6 +11,8 @@ class LooperProcessor extends AudioWorkletProcessor {
 
     constructor(options) {
         super();
+
+        this.loopBuffer = new Float32Array(options.processorOptions.bufferSize);
 
         this.port.onmessage = (e) => {
             switch (e.data.type) {

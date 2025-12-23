@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import looperProcessorURL from "../scripts/looper-processor?url";
 
+interface LooperOptions {
+    bufferSizeInSeconds: number; // i samples
+}
+
 export type LooperState = "empty" | "init recording" | "playing" | "overdubbing";
 
 type MainToWorkletMessage =
@@ -9,7 +13,7 @@ type MainToWorkletMessage =
     | { type: "set-output-latency"; value: number };
 type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: "set-progress"; value: number };
 
-export default function useLooperEngine() {
+export default function useLooperEngine(options: LooperOptions = { bufferSizeInSeconds: 5 * 60 }) {
     const [looperState, setLooperState] = useState<LooperState>("empty");
     const [looperProgress, setLooperProgress] = useState(0);
     const [latency, setLatency] = useState(0);
@@ -30,7 +34,11 @@ export default function useLooperEngine() {
                 micStream = await getMicStream(audioCtx);
                 if (cancelled) return cancel();
                 const streamNode = createSourceNode(audioCtx, micStream, false);
-                const looperNode = await createLooperNode(audioCtx, onReceiveMessage);
+                const looperNode = await createLooperNode(
+                    audioCtx,
+                    options.bufferSizeInSeconds * audioCtx.sampleRate,
+                    onReceiveMessage
+                );
                 if (cancelled) return cancel();
                 const gainNode = new GainNode(audioCtx);
 
@@ -163,15 +171,20 @@ function calculateLatency(audioCtx: AudioContext, micStream: MediaStream) {
     };
 }
 
-async function createLooperNode(audioCtx: AudioContext, onReceiveMessage: (data: WorkletToMainMessage) => void) {
+async function createLooperNode(
+    audioCtx: AudioContext,
+    bufferSize: number,
+    onReceiveMessage: (data: WorkletToMainMessage) => void
+) {
     await audioCtx.audioWorklet.addModule(looperProcessorURL);
 
-    // TODO: legg til parameter for loop buffer size
     const looperNode = new AudioWorkletNode(audioCtx, "looper-processor", {
         numberOfInputs: 1,
         numberOfOutputs: 1,
         outputChannelCount: [1],
-        processorOptions: {},
+        processorOptions: {
+            bufferSize,
+        },
     });
 
     looperNode.port.onmessage = (e) => onReceiveMessage(e.data as WorkletToMainMessage);
