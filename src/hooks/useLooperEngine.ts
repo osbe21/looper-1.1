@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import looperProcessorURL from "../scripts/looper-processor?url";
 
 interface LooperOptions {
-    bufferSizeInSeconds: number; // i samples
+    bufferSize?: number; // sekunder
+    updateProgressInterval?: number; // sekunder
 }
 
 export type LooperState = "empty" | "init recording" | "playing" | "overdubbing";
@@ -13,7 +14,7 @@ type MainToWorkletMessage =
     | { type: "set-output-latency"; value: number };
 type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: "set-progress"; value: number };
 
-export default function useLooperEngine(options: LooperOptions = { bufferSizeInSeconds: 5 * 60 }) {
+export default function useLooperEngine({ bufferSize = 5 * 60, updateProgressInterval = 0.01 }: LooperOptions = {}) {
     const [looperState, setLooperState] = useState<LooperState>("empty");
     const [looperProgress, setLooperProgress] = useState(0);
     const [latency, setLatency] = useState(0);
@@ -36,7 +37,8 @@ export default function useLooperEngine(options: LooperOptions = { bufferSizeInS
                 const streamNode = createSourceNode(audioCtx, micStream, false);
                 const looperNode = await createLooperNode(
                     audioCtx,
-                    options.bufferSizeInSeconds * audioCtx.sampleRate,
+                    bufferSize,
+                    updateProgressInterval,
                     onReceiveMessage
                 );
                 if (cancelled) return cancel();
@@ -174,6 +176,7 @@ function calculateLatency(audioCtx: AudioContext, micStream: MediaStream) {
 async function createLooperNode(
     audioCtx: AudioContext,
     bufferSize: number,
+    updateProgressInterval: number,
     onReceiveMessage: (data: WorkletToMainMessage) => void
 ) {
     await audioCtx.audioWorklet.addModule(looperProcessorURL);
@@ -183,7 +186,8 @@ async function createLooperNode(
         numberOfOutputs: 1,
         outputChannelCount: [1],
         processorOptions: {
-            bufferSize,
+            bufferSize: Math.floor(bufferSize * audioCtx.sampleRate),
+            updateProgressInterval: Math.floor(updateProgressInterval * audioCtx.sampleRate),
         },
     });
 

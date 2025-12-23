@@ -6,6 +6,7 @@ export default function App() {
         <main className="m-8 flex flex-col items-center gap-8">
             <InformationDialog />
 
+            {/* // TODO: Lag et settings panel for looperen */}
             <LooperPedal />
         </main>
     );

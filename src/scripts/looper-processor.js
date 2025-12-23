@@ -2,9 +2,9 @@
 
 class LooperProcessor extends AudioWorkletProcessor {
     state = "empty";
-    loopBuffer = new Float32Array();
     loopLength = 0;
     currentLoopPos = 0;
+    updateProgressCounter = 0;
 
     inputLatency = 0; // samples
     outputLatency = 0; // samples
@@ -13,6 +13,7 @@ class LooperProcessor extends AudioWorkletProcessor {
         super();
 
         this.loopBuffer = new Float32Array(options.processorOptions.bufferSize);
+        this.updateProgressInterval = options.processorOptions.updateProgressInterval; // samples
 
         this.port.onmessage = (e) => {
             switch (e.data.type) {
@@ -97,9 +98,12 @@ class LooperProcessor extends AudioWorkletProcessor {
             }
         }
 
-        // TODO: Finn en bedre måte å bestemme når denne eventen skal fires
-        if (this.currentLoopPos % (128 * 16) == 0 && this.loopLength > 0)
+        this.updateProgressCounter += output.length;
+
+        if (this.updateProgressCounter >= this.updateProgressInterval && this.loopLength > 0) {
             this.port.postMessage({ type: "set-progress", value: this.currentLoopPos / this.loopLength });
+            this.updateProgressCounter %= this.updateProgressInterval;
+        }
 
         return true;
     }
