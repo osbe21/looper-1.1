@@ -10,7 +10,6 @@ export default function useLooperEngine() {
     const [looperState, setLooperState] = useState<LooperState>("empty");
     const [looperProgress, setLooperProgress] = useState(0);
     const [latency, setLatency] = useState(0);
-    const [audioContextState, setAudioContextState] = useState<AudioContextState | null>(null);
 
     const audioCtxRef = useRef<AudioContext | null>(null);
     const micStreamRef = useRef<MediaStream | null>(null);
@@ -25,7 +24,7 @@ export default function useLooperEngine() {
 
         async function initAudioContext() {
             try {
-                audioCtx = createAudioContext((ctx) => setAudioContextState(ctx.state));
+                audioCtx = createAudioContext();
                 micStream = await getMicStream(audioCtx);
 
                 if (cancelled) return cancel();
@@ -82,7 +81,6 @@ export default function useLooperEngine() {
         looperState,
         looperProgress,
         latency,
-        audioContextState,
 
         resumeAudioContext: function () {
             audioCtxRef.current?.resume();
@@ -109,15 +107,8 @@ export default function useLooperEngine() {
     };
 }
 
-function createAudioContext(onStateChange?: (ctx: AudioContext) => void) {
-    const audioCtx = new AudioContext({ latencyHint: 0 });
-
-    if (onStateChange) {
-        audioCtx.onstatechange = () => onStateChange(audioCtx);
-        onStateChange(audioCtx);
-    }
-
-    return audioCtx;
+function createAudioContext() {
+    return new AudioContext({ latencyHint: 0 });
 }
 
 async function getMicStream(audioCtx: AudioContext) {

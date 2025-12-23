@@ -25,7 +25,6 @@ export default function LooperPedal() {
         looperState,
         looperProgress,
         latency,
-        audioContextState,
         resumeAudioContext,
         footswitch,
         setGain: setLooperGain,
