@@ -18,8 +18,10 @@ type MainToWorkletMessage =
     | { type: "set-output-latency"; value: number };
 type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: "set-progress"; value: number };
 
+const defaultMicrophoneSettings = { echoCancellation: true, noiseSuppression: true };
+
 export default function useLooperEngine({
-    microphoneSettings = { echoCancellation: true, noiseSuppression: true },
+    microphoneSettings = defaultMicrophoneSettings,
     bufferSize = 5 * 60,
     updateProgressInterval = 0.01,
 }: LooperOptions = {}) {
@@ -79,6 +81,22 @@ export default function useLooperEngine({
         };
     }, [microphoneSettings, bufferSize, updateProgressInterval]);
 
+    function updateLatency() {
+        const { inputLatency, outputLatency } = calculateLatency(audioCtxRef.current!, micStreamRef.current!);
+
+        looperNodeRef.current?.port.postMessage({
+            type: "set-input-latency",
+            value: Math.floor(inputLatency * audioCtxRef.current!.sampleRate),
+        });
+
+        looperNodeRef.current?.port.postMessage({
+            type: "set-output-latency",
+            value: Math.floor(outputLatency * audioCtxRef.current!.sampleRate),
+        });
+
+        setLatency(inputLatency + outputLatency);
+    }
+
     function onReceiveMessage(data: WorkletToMainMessage) {
         switch (data.type) {
             case "set-state":
@@ -95,26 +113,14 @@ export default function useLooperEngine({
         latency,
 
         resumeAudioContext: function () {
-            audioCtxRef.current?.resume().then(() => {
-                const { inputLatency, outputLatency } = calculateLatency(audioCtxRef.current!, micStreamRef.current!);
-
-                looperNodeRef.current?.port.postMessage({
-                    type: "set-input-latency",
-                    value: Math.floor(inputLatency * audioCtxRef.current!.sampleRate),
-                });
-
-                looperNodeRef.current?.port.postMessage({
-                    type: "set-output-latency",
-                    value: Math.floor(outputLatency * audioCtxRef.current!.sampleRate),
-                });
-
-                setLatency(inputLatency + outputLatency);
-            });
+            audioCtxRef.current?.resume().then(updateLatency);
         },
 
         footswitch: function () {
             const message: MainToWorkletMessage = { type: "footswitch" };
             looperNodeRef.current?.port.postMessage(message);
+
+            updateLatency();
         },
 
         setGain: function (value: number) {
