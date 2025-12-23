@@ -1,6 +1,15 @@
 import { Info } from "lucide-react";
 import { Button } from "./ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "./ui/dialog";
 
 export default function InformationDialog() {
     return (
@@ -14,12 +23,17 @@ export default function InformationDialog() {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>How does the looper/1.1 work?</DialogTitle>
-                    <DialogDescription>
-                        Blah blah blah Lorem ipsum dolor sit, amet consectetur adipisicing elit. Hic officia beatae
-                        vero, adipisci ullam blanditiis tempora quibusdam provident, amet eveniet quo suscipit error in
-                        ad eaque autem ex? Et, porro!
-                    </DialogDescription>
                 </DialogHeader>
+
+                <p>It's important to enable microphone access</p>
+
+                <DialogFooter className="sm:justify-start">
+                    <DialogClose asChild>
+                        <Button type="button" variant="outline">
+                            Close
+                        </Button>
+                    </DialogClose>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
