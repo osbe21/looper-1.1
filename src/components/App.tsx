@@ -7,6 +7,7 @@ export default function App() {
             <InformationDialog />
 
             {/* // TODO: Lag et settings panel for looperen */}
+            {/* // TODO: Vis noe UI når vi ikke har tilgang til mikrofonen */}
             <LooperPedal />
         </main>
     );

@@ -81,6 +81,28 @@ export default function useLooperEngine({
         };
     }, [microphoneSettings, bufferSize, updateProgressInterval]);
 
+    useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.code === "Space") {
+                event.preventDefault();
+                footswitch();
+            }
+        };
+
+        window.addEventListener("keydown", onKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", onKeyDown);
+        };
+    }, []);
+
+    function footswitch() {
+        const message: MainToWorkletMessage = { type: "footswitch" };
+        looperNodeRef.current?.port.postMessage(message);
+
+        updateLatency();
+    }
+
     function updateLatency() {
         const { inputLatency, outputLatency } = calculateLatency(audioCtxRef.current!, micStreamRef.current!);
 
@@ -116,12 +138,7 @@ export default function useLooperEngine({
             audioCtxRef.current?.resume().then(updateLatency);
         },
 
-        footswitch: function () {
-            const message: MainToWorkletMessage = { type: "footswitch" };
-            looperNodeRef.current?.port.postMessage(message);
-
-            updateLatency();
-        },
+        footswitch,
 
         setGain: function (value: number) {
             if (audioCtxRef.current && gainNodeRef.current)

@@ -35,6 +35,8 @@ export default function LooperPedal() {
     const isRecording = looperState === "init recording" || looperState === "overdubbing";
 
     useEffect(() => {
+        // TODO: Finn en bedre måte å aktivere audio context
+        // når vi går til en annen tab blir contexten suspendert
         window.addEventListener("click", resumeAudioContext, { once: true });
 
         return () => window.removeEventListener("click", resumeAudioContext);
@@ -73,6 +75,7 @@ export default function LooperPedal() {
 
                 <h1 className="text-4xl font-black italic font-mono">looper/1.1</h1>
 
+                {/* TODO: Gi bedre visuell feedback når vi trykker på footswitchen */}
                 <Button onClick={footswitch} className="w-full h-42 font-mono text-2xl">
                     Press to {!isRecording ? "record" : "stop"}
                 </Button>
