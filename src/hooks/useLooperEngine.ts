@@ -161,9 +161,8 @@ function calculateLatency(audioCtx: AudioContext, micStream: MediaStream) {
     const micTrack = micStream.getAudioTracks()[0];
     const micTrackSettings = micTrack.getSettings();
 
-    // FIXME: settings.latency er ikke tilgjenglig i safari
-    // @ts-ignore
-    const inputLatency = micTrackSettings.latency;
+    // @ts-ignore Støttes ikke av safari
+    const inputLatency = micTrackSettings.latency ?? 0;
     const baseLatency = audioCtx.baseLatency;
     const outputLatency = audioCtx.outputLatency;
 
