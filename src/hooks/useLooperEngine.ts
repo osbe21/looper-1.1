@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import looperProcessorURL from "../scripts/looper-processor?url";
 
 interface LooperOptions {
+    microphoneSettings?: {
+        echoCancellation?: boolean;
+        noiseSuppression?: boolean;
+    };
     bufferSize?: number; // sekunder
     updateProgressInterval?: number; // sekunder
 }
@@ -14,7 +18,11 @@ type MainToWorkletMessage =
     | { type: "set-output-latency"; value: number };
 type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: "set-progress"; value: number };
 
-export default function useLooperEngine({ bufferSize = 5 * 60, updateProgressInterval = 0.01 }: LooperOptions = {}) {
+export default function useLooperEngine({
+    microphoneSettings = { echoCancellation: true, noiseSuppression: true },
+    bufferSize = 5 * 60,
+    updateProgressInterval = 0.01,
+}: LooperOptions = {}) {
     const [looperState, setLooperState] = useState<LooperState>("empty");
     const [looperProgress, setLooperProgress] = useState(0);
     const [latency, setLatency] = useState(0);
@@ -32,7 +40,7 @@ export default function useLooperEngine({ bufferSize = 5 * 60, updateProgressInt
         async function initAudioContext() {
             try {
                 audioCtx = createAudioContext();
-                micStream = await getMicStream(audioCtx);
+                micStream = await getMicStream(audioCtx, microphoneSettings);
                 if (cancelled) return cancel();
                 const streamNode = createSourceNode(audioCtx, micStream, false);
                 const looperNode = await createLooperNode(
@@ -69,7 +77,7 @@ export default function useLooperEngine({ bufferSize = 5 * 60, updateProgressInt
 
             cancel();
         };
-    }, []);
+    }, [microphoneSettings, bufferSize, updateProgressInterval]);
 
     function onReceiveMessage(data: WorkletToMainMessage) {
         switch (data.type) {
@@ -113,16 +121,6 @@ export default function useLooperEngine({ bufferSize = 5 * 60, updateProgressInt
             if (audioCtxRef.current && gainNodeRef.current)
                 gainNodeRef.current.gain.linearRampToValueAtTime(value, audioCtxRef.current.currentTime + 0.01);
         },
-
-        // TODO: disse instillingene må restarte audio contexten
-        // setMicrophoneSettings: function (echoCancellation?: boolean, noiseSuppression?: boolean) {
-        //     micStreamRef.current?.getTracks().forEach((track) =>
-        //         track.applyConstraints({
-        //             echoCancellation,
-        //             noiseSuppression,
-        //         })
-        //     );
-        // },
     };
 }
 
@@ -130,14 +128,16 @@ function createAudioContext() {
     return new AudioContext({ latencyHint: 0 });
 }
 
-async function getMicStream(audioCtx: AudioContext) {
+async function getMicStream(
+    audioCtx: AudioContext,
+    microphoneSettings: { echoCancellation?: boolean; noiseSuppression?: boolean }
+) {
     return await navigator.mediaDevices.getUserMedia({
         audio: {
             sampleRate: audioCtx.sampleRate,
             channelCount: 1,
             autoGainControl: false,
-            echoCancellation: true,
-            noiseSuppression: true,
+            ...microphoneSettings,
             // @ts-ignore Støttes ikke av safari
             latency: 0,
         },
