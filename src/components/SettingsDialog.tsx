@@ -9,8 +9,15 @@ import {
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Settings } from "lucide-react";
+import type { LooperOptions } from "@/hooks/useLooperEngine";
 
-export default function SettingsDialog() {
+interface Props {
+    settings: LooperOptions;
+    onUpdateSettings: (newSettings: Partial<LooperOptions>) => void;
+}
+
+// TODO: Legg til dark mode støtte
+export default function SettingsDialog({ settings, onUpdateSettings }: Props) {
     return (
         <Dialog>
             <DialogTrigger asChild>

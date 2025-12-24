@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import looperProcessorURL from "../scripts/looper-processor?url";
 
-interface LooperOptions {
-    microphoneSettings?: {
-        echoCancellation?: boolean;
-        noiseSuppression?: boolean;
+// TODO: Legg til option for latency compensation
+export interface LooperOptions {
+    microphoneSettings: {
+        echoCancellation: boolean;
+        noiseSuppression: boolean;
     };
-    bufferSize?: number; // sekunder
-    updateProgressInterval?: number; // sekunder
+    bufferSize: number; // sekunder
+    updateProgressInterval: number; // sekunder
 }
 
 export type LooperState = "empty" | "init recording" | "playing" | "overdubbing";
@@ -18,14 +19,7 @@ type MainToWorkletMessage =
     | { type: "set-output-latency"; value: number };
 type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: "set-progress"; value: number };
 
-const defaultMicrophoneSettings = { echoCancellation: true, noiseSuppression: true };
-
-// TODO: Parameterne burde ikke ha default verdier, men bli gitt i et options objekt som har default verdier fra App.tsx
-export default function useLooperEngine({
-    microphoneSettings = defaultMicrophoneSettings,
-    bufferSize = 5 * 60,
-    updateProgressInterval = 0.01,
-}: LooperOptions = {}) {
+export default function useLooperEngine(options: LooperOptions) {
     const [looperState, setLooperState] = useState<LooperState>("empty");
     const [looperProgress, setLooperProgress] = useState(0);
     const [latency, setLatency] = useState(0);
@@ -43,13 +37,13 @@ export default function useLooperEngine({
         async function initAudioContext() {
             try {
                 audioCtx = createAudioContext();
-                micStream = await getMicStream(audioCtx, microphoneSettings);
+                micStream = await getMicStream(audioCtx, options.microphoneSettings);
                 if (cancelled) return cancel();
                 const streamNode = createSourceNode(audioCtx, micStream, false);
                 const looperNode = await createLooperNode(
                     audioCtx,
-                    bufferSize,
-                    updateProgressInterval,
+                    options.bufferSize,
+                    options.updateProgressInterval,
                     onReceiveMessage
                 );
                 if (cancelled) return cancel();
@@ -80,7 +74,7 @@ export default function useLooperEngine({
 
             cancel();
         };
-    }, [microphoneSettings, bufferSize, updateProgressInterval]);
+    }, [options]);
 
     useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {

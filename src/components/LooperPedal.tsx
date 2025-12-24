@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import useLooperEngine, { type LooperState } from "../hooks/useLooperEngine";
+import useLooperEngine, { type LooperOptions, type LooperState } from "../hooks/useLooperEngine";
 import { buildStyles, CircularProgressbarWithChildren } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { Knob } from "./Knob";
@@ -20,7 +20,7 @@ const stateToText: Record<LooperState, string> = {
     overdubbing: "Overdubbing",
 };
 
-export default function LooperPedal() {
+export default function LooperPedal({ options }: { options: LooperOptions }) {
     const {
         looperState,
         looperProgress,
@@ -28,7 +28,7 @@ export default function LooperPedal() {
         resumeAudioContext,
         footswitch,
         setGain: setLooperGain,
-    } = useLooperEngine();
+    } = useLooperEngine(options);
 
     const [gain, setGain] = useState(1);
 
