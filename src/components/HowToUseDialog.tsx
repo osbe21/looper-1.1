@@ -1,10 +1,8 @@
-import { Info } from "lucide-react";
 import { Button } from "./ui/button";
 import {
     Dialog,
     DialogClose,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -15,9 +13,8 @@ export default function InformationDialog() {
     return (
         <Dialog defaultOpen>
             <DialogTrigger asChild>
-                <Button>
-                    <Info />
-                    Information
+                <Button variant="ghost" size="default">
+                    How to use?
                 </Button>
             </DialogTrigger>
             <DialogContent>

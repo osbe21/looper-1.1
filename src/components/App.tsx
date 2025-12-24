@@ -1,14 +1,19 @@
 import LooperPedal from "./LooperPedal";
-import InformationDialog from "./InformationDialog";
+import InformationDialog from "./HowToUseDialog";
+import Navbar from "./Navbar";
 
 export default function App() {
     return (
-        <main className="m-8 flex flex-col items-center gap-8">
-            <InformationDialog />
+        <>
+            <header className="sticky top-0">
+                <Navbar />
+            </header>
 
-            {/* // TODO: Lag et settings panel for looperen */}
-            {/* // TODO: Vis noe UI når vi ikke har tilgang til mikrofonen */}
-            <LooperPedal />
-        </main>
+            <main className="flex flex-col items-center gap-8">
+                {/* // TODO: Lag et settings panel for looperen */}
+                {/* // TODO: Vis noe UI når vi ikke har tilgang til mikrofonen */}
+                <LooperPedal />
+            </main>
+        </>
     );
 }

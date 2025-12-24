@@ -20,6 +20,7 @@ type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: 
 
 const defaultMicrophoneSettings = { echoCancellation: true, noiseSuppression: true };
 
+// TODO: Parameterne burde ikke ha default verdier, men bli gitt i et options objekt som har default verdier fra App.tsx
 export default function useLooperEngine({
     microphoneSettings = defaultMicrophoneSettings,
     bufferSize = 5 * 60,
