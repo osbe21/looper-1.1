@@ -5,8 +5,16 @@ import "react-circular-progressbar/dist/styles.css";
 import { Knob } from "./Knob";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+import { Separator } from "./ui/separator";
 
-const stateToColor: Record<LooperState, string> = {
+const stateToRingColor: Record<LooperState, string> = {
+    empty: "var(--color-neutral-500)",
+    "init recording": "var(--color-red-500)",
+    playing: "var(--color-green-500)",
+    overdubbing: "var(--color-orange-500)",
+};
+
+const stateToIndicatorColor: Record<LooperState, string> = {
     empty: "bg-neutral-500",
     "init recording": "bg-red-500",
     playing: "bg-green-500",
@@ -48,38 +56,60 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
     }
 
     return (
-        <>
-            <div className="w-86 h-164 p-4 flex flex-col justify-between items-center border bg-card rounded-2xl shadow-2xl">
-                <div className="size-54 m-6">
+        <div className="h-full flex flex-col justify-stretch">
+            <div className="flex gap-4 p-4">
+                {/* Progress ring */}
+                <div className="flex-3">
                     <CircularProgressbarWithChildren
                         value={looperProgress}
                         maxValue={1}
                         styles={buildStyles({
                             strokeLinecap: "butt",
                             pathTransition: "none",
-                            pathColor: "var(--color-primary)",
+                            pathColor: stateToRingColor[looperState],
+                            trailColor: "var(--color-muted)",
                         })}
                     >
-                        <p className="text-xs font-mono">Latency: {Math.round(latency * 1000)}ms</p>
-                        <div className="flex justify-center items-center gap-2">
-                            <div className={cn("size-3 rounded-full", stateToColor[looperState])}></div>
-                            <p className="font-mono">{stateToText[looperState]}</p>
+                        <div className="flex flex-col justify-center items-center gap-2">
+                            <div className="flex justify-center items-baseline gap-2">
+                                <div className={cn("size-3 rounded-full", stateToIndicatorColor[looperState])}></div>
+                                <p className="text-lg">{stateToText[looperState]}</p>
+                            </div>
+
+                            <Separator />
+
+                            <p className="text-xs">Latency: {Math.round(latency * 1000)}ms</p>
                         </div>
                     </CircularProgressbarWithChildren>
                 </div>
 
-                <div className="flex flex-col justify-center items-center">
-                    <Knob max={2} value={gain} onChange={handleGainChange} />
-                    <p className="font-mono">Level</p>
+                {/* Settings */}
+                <div className="flex-1 flex flex-col px-2 border rounded-lg">
+                    {/* Knob and label */}
+                    <div className="flex-1 flex flex-col justify-center items-center gap-1">
+                        <p className="font-medium">Level</p>
+                        <Knob max={2} value={gain} onChange={handleGainChange} />
+                    </div>
+
+                    <Separator />
+
+                    <div className="flex-1 flex flex-col justify-evenly items-center">
+                        <Button variant="outline">Undo</Button>
+                        <Button variant="outline">Reset</Button>
+                    </div>
                 </div>
-
-                <h1 className="text-4xl font-black italic font-mono">looper/1.1</h1>
-
-                {/* TODO: Gi bedre visuell feedback når vi trykker på footswitchen */}
-                <Button onClick={footswitch} className="w-full h-42 font-mono text-2xl">
-                    Press to {!isRecording ? "record" : "stop"}
-                </Button>
             </div>
-        </>
+
+            {/* <Separator /> */}
+
+            <h1 className="my-4 text-center text-4xl font-bold font-mono italic">looper/1.1</h1>
+
+            {/* Footswitch */}
+            <div className="flex-1 p-2 pt-0">
+                <button className="size-full flex justify-center items-center text-muted-foreground text-4xl bg-primary rounded-2xl">
+                    Press to {!isRecording ? "record" : "stop"}
+                </button>
+            </div>
+        </div>
     );
 }

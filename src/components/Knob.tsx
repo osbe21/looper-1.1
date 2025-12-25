@@ -11,7 +11,7 @@ export function Knob({ min = 0, max = 1, value = 0, onChange = () => {} }: Props
     const rotation = -135 + ((value - min) / (max - min)) * 270;
 
     return (
-        <div className="relative size-20">
+        <div className="relative size-16">
             {/* Invisible range input */}
             <input
                 type="range"
@@ -26,7 +26,7 @@ export function Knob({ min = 0, max = 1, value = 0, onChange = () => {} }: Props
             {/* Knob */}
             <svg viewBox="0 0 100 100" className="w-full h-full">
                 {/* Base */}
-                <circle cx="50" cy="50" r="45" className="fill-accent-foreground" />
+                <circle cx="50" cy="50" r="45" className="fill-secondary" />
 
                 {/* Indicator */}
                 <g
@@ -35,7 +35,7 @@ export function Knob({ min = 0, max = 1, value = 0, onChange = () => {} }: Props
                         transform: `rotate(${rotation}deg)`,
                     }}
                 >
-                    <rect x="48" y="5" width="4" height="20" className="fill-accent" />
+                    <rect x="48" y="5" width="4" height="24" className="fill-secondary-foreground" />
                 </g>
             </svg>
         </div>

@@ -23,14 +23,18 @@ export default function App() {
 
     return (
         <>
-            <header className="sticky top-0">
-                <Navbar looperOptions={looperOptions} onUpdateLooperOptions={handleUpdateOptions} />
-            </header>
+            <div className="min-h-screen flex flex-col">
+                <header>
+                    <Navbar looperOptions={looperOptions} onUpdateLooperOptions={handleUpdateOptions} />
+                </header>
 
-            <main className="flex flex-col items-center gap-8">
-                {/* // TODO: Vis noe UI når vi ikke har tilgang til mikrofonen */}
-                <LooperPedal options={looperOptions} />
-            </main>
+                <main className="flex-1 flex">
+                    <div className="flex-1">
+                        {/* // TODO: Vis noe UI når vi ikke har tilgang til mikrofonen */}
+                        <LooperPedal options={looperOptions} />
+                    </div>
+                </main>
+            </div>
         </>
     );
 }
