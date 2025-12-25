@@ -10,14 +10,14 @@ import {
 import { Button } from "./ui/button";
 import { Settings } from "lucide-react";
 import type { LooperOptions } from "@/hooks/useLooperEngine";
+import { ModeToggle } from "./ModeToggle";
 
 interface Props {
-    settings: LooperOptions;
-    onUpdateSettings: (newSettings: Partial<LooperOptions>) => void;
+    looperOptions: LooperOptions;
+    onUpdateLooperOptions: (newOptions: Partial<LooperOptions>) => void;
 }
 
-// TODO: Legg til dark mode støtte
-export default function SettingsDialog({ settings, onUpdateSettings }: Props) {
+export default function SettingsDialog({ looperOptions, onUpdateLooperOptions }: Props) {
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -31,6 +31,8 @@ export default function SettingsDialog({ settings, onUpdateSettings }: Props) {
                 </DialogHeader>
 
                 <p>Settings content goes here</p>
+
+                <ModeToggle />
 
                 <DialogFooter className="sm:justify-start">
                     <DialogClose asChild>

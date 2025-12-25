@@ -5,7 +5,7 @@ import type { LooperOptions } from "@/hooks/useLooperEngine";
 
 export default function App() {
     // TODO: Load disse fra local storage
-    const [settings, setSettings] = useState<LooperOptions>({
+    const [looperOptions, setLooperOptions] = useState<LooperOptions>({
         microphoneSettings: {
             echoCancellation: true,
             noiseSuppression: true,
@@ -14,22 +14,22 @@ export default function App() {
         updateProgressInterval: 0.01,
     });
 
-    function handleUpdateSettings(newSettings: Partial<LooperOptions>) {
-        setSettings((prevSettings) => ({
+    function handleUpdateOptions(newOptions: Partial<LooperOptions>) {
+        setLooperOptions((prevSettings) => ({
             ...prevSettings,
-            ...newSettings,
+            ...newOptions,
         }));
     }
 
     return (
         <>
             <header className="sticky top-0">
-                <Navbar settings={settings} onUpdateSettings={handleUpdateSettings} />
+                <Navbar looperOptions={looperOptions} onUpdateLooperOptions={handleUpdateOptions} />
             </header>
 
             <main className="flex flex-col items-center gap-8">
                 {/* // TODO: Vis noe UI når vi ikke har tilgang til mikrofonen */}
-                <LooperPedal options={settings} />
+                <LooperPedal options={looperOptions} />
             </main>
         </>
     );
