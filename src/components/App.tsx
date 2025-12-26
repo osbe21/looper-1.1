@@ -7,9 +7,10 @@ export default function App() {
     // TODO: Load disse fra local storage
     const [looperOptions, setLooperOptions] = useState<LooperOptions>({
         microphoneSettings: {
+            noiseSupression: true,
             echoCancellation: true,
-            noiseSuppression: true,
         },
+        latencyCompensation: 0,
         bufferSize: 5 * 60,
         updateProgressInterval: 0.01,
     });
