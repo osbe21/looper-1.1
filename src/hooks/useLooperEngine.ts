@@ -20,8 +20,8 @@ export type LooperState =
 
 type MainToWorkletMessage =
     | { type: "footswitch" }
-    | { type: "set-input-latency"; value: number }
-    | { type: "set-output-latency"; value: number };
+    | { type: "set-latency"; value: { input: number; output: number } };
+
 type WorkletToMainMessage =
     | { type: "set-state"; value: LooperState }
     | { type: "set-progress"; value: number };
@@ -102,14 +102,16 @@ export default function useLooperEngine(options: LooperOptions) {
         );
 
         looperNodeRef.current?.port.postMessage({
-            type: "set-input-latency",
-            value: Math.floor(inputLatency * audioCtxRef.current!.sampleRate),
-        });
-
-        looperNodeRef.current?.port.postMessage({
-            type: "set-output-latency",
-            value: Math.floor(outputLatency * audioCtxRef.current!.sampleRate),
-        });
+            type: "set-latency",
+            value: {
+                input: Math.floor(
+                    inputLatency * audioCtxRef.current!.sampleRate
+                ),
+                output: Math.floor(
+                    outputLatency * audioCtxRef.current!.sampleRate
+                ),
+            },
+        } as MainToWorkletMessage);
 
         setLatency(inputLatency + outputLatency);
     }

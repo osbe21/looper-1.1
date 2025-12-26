@@ -21,11 +21,9 @@ class LooperProcessor extends AudioWorkletProcessor {
                 case "footswitch":
                     this.handleFootswitch();
                     break;
-                case "set-input-latency":
-                    this.inputLatency = e.data.value;
-                    break;
-                case "set-output-latency":
-                    this.outputLatency = e.data.value;
+                case "set-latency":
+                    this.inputLatency = e.data.value.input;
+                    this.outputLatency = e.data.value.output;
                     break;
             }
         };
