@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import looperProcessorURL from "../scripts/looper-processor?url";
+import { toast } from "sonner";
 
 export interface LooperOptions {
     microphoneSettings: {
@@ -68,6 +69,29 @@ export default function useLooperEngine(options: LooperOptions) {
                 gainNodeRef.current = gainNode;
             } catch (error) {
                 cancel();
+
+                if (error instanceof DOMException) {
+                    let message = "";
+
+                    switch (error.name) {
+                        case "NotAllowedError":
+                            message = "Access to the microphone was denied.";
+                            break;
+                        case "NotFoundError":
+                            message =
+                                "No microphone was found. Please connect a microphone and try again.";
+                            break;
+                        case "SecurityError":
+                            message =
+                                "Browser security settings are preventing access to the microphone.";
+                            break;
+                        default:
+                            message =
+                                "An unknown error occurred during initialization.";
+                    }
+
+                    toast.error(message);
+                }
             }
         }
 
@@ -88,6 +112,7 @@ export default function useLooperEngine(options: LooperOptions) {
     }, [options]);
 
     function footswitch() {
+        // TODO: skjekk om alt er satt opp riktig (mikrofon og audio context)
         const message: MainToWorkletMessage = { type: "footswitch" };
         looperNodeRef.current?.port.postMessage(message);
 

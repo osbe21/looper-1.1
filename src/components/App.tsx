@@ -2,6 +2,7 @@ import { useState } from "react";
 import LooperPedal from "./LooperPedal";
 import Navbar from "./Navbar";
 import type { LooperOptions } from "@/hooks/useLooperEngine";
+import { Toaster } from "sonner";
 
 export default function App() {
     // TODO: Load disse fra local storage
@@ -39,6 +40,8 @@ export default function App() {
                     </div>
                 </main>
             </div>
+
+            <Toaster position="top-center" />
         </>
     );
 }
