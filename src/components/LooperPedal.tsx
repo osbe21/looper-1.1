@@ -34,6 +34,7 @@ const stateToText: Record<LooperState, string> = {
     overdubbing: "Overdubbing",
 };
 
+// TODO: Bruk latency compensation fra options
 export default function LooperPedal({ options }: { options: LooperOptions }) {
     const {
         looperState,

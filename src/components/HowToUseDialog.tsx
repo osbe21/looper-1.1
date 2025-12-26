@@ -21,10 +21,9 @@ export default function InformationDialog() {
                 <DialogHeader>
                     <DialogTitle>How does the looper/1.1 work?</DialogTitle>
                 </DialogHeader>
-
+                // TODO: Fyll ut denne
                 <p>It's important to enable microphone access</p>
                 <p>Press space to record and stop</p>
-
                 <DialogFooter className="sm:justify-start">
                     <DialogClose asChild>
                         <Button type="button" variant="outline">

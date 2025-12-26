@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import looperProcessorURL from "../scripts/looper-processor?url";
 
-// TODO: Legg til option for latency compensation
 export interface LooperOptions {
     microphoneSettings: {
         noiseSupression: boolean;
