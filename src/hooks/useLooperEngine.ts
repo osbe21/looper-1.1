@@ -75,13 +75,15 @@ export default function useLooperEngine(options: LooperOptions) {
         initAudioContext();
 
         function cancel() {
+            if (cancelled) return;
+
+            cancelled = true;
+
             micStream?.getTracks().forEach((track) => track.stop());
             audioCtx?.close();
         }
 
         return () => {
-            cancelled = true;
-
             cancel();
         };
     }, [options]);
