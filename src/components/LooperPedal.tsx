@@ -1,31 +1,37 @@
-import { useEffect, useState } from "react";
-import useLooperEngine, { type LooperOptions, type LooperState } from "../hooks/useLooperEngine";
-import { buildStyles, CircularProgressbarWithChildren } from "react-circular-progressbar";
-import "react-circular-progressbar/dist/styles.css";
-import { Knob } from "./Knob";
-import { Button } from "./ui/button";
-import { cn } from "@/lib/utils";
-import { Separator } from "./ui/separator";
+import { useEffect, useState } from 'react';
+import useLooperEngine, {
+    type LooperOptions,
+    type LooperState,
+} from '../hooks/useLooperEngine';
+import {
+    buildStyles,
+    CircularProgressbarWithChildren,
+} from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+import { Knob } from './Knob';
+import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
+import { Separator } from './ui/separator';
 
 const stateToRingColor: Record<LooperState, string> = {
-    empty: "var(--color-neutral-500)",
-    "init recording": "var(--color-red-500)",
-    playing: "var(--color-green-500)",
-    overdubbing: "var(--color-orange-500)",
+    empty: 'var(--color-neutral-500)',
+    'init recording': 'var(--color-red-500)',
+    playing: 'var(--color-green-500)',
+    overdubbing: 'var(--color-orange-500)',
 };
 
 const stateToIndicatorColor: Record<LooperState, string> = {
-    empty: "bg-neutral-500",
-    "init recording": "bg-red-500",
-    playing: "bg-green-500",
-    overdubbing: "bg-orange-500",
+    empty: 'bg-neutral-500',
+    'init recording': 'bg-red-500',
+    playing: 'bg-green-500',
+    overdubbing: 'bg-orange-500',
 };
 
 const stateToText: Record<LooperState, string> = {
-    empty: "Empty",
-    "init recording": "Recording",
-    playing: "Playing",
-    overdubbing: "Overdubbing",
+    empty: 'Empty',
+    'init recording': 'Recording',
+    playing: 'Playing',
+    overdubbing: 'Overdubbing',
 };
 
 export default function LooperPedal({ options }: { options: LooperOptions }) {
@@ -40,14 +46,15 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
 
     const [gain, setGain] = useState(1);
 
-    const isRecording = looperState === "init recording" || looperState === "overdubbing";
+    const isRecording =
+        looperState === 'init recording' || looperState === 'overdubbing';
 
     useEffect(() => {
         // TODO: Finn en bedre måte å aktivere audio context
         // når vi går til en annen tab blir contexten suspendert
-        window.addEventListener("click", resumeAudioContext, { once: true });
+        window.addEventListener('click', resumeAudioContext, { once: true });
 
-        return () => window.removeEventListener("click", resumeAudioContext);
+        return () => window.removeEventListener('click', resumeAudioContext);
     }, []);
 
     function handleGainChange(value: number) {
@@ -56,58 +63,74 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
     }
 
     return (
-        <div className="h-full flex flex-col justify-stretch">
-            <div className="flex gap-4 p-4">
+        <div className="flex h-full flex-col justify-stretch md:flex-row">
+            <div className="flex gap-4 p-4 md:m-8 md:flex-col">
                 {/* Progress ring */}
-                <div className="flex-3">
+                <div className="flex flex-1 items-center justify-center">
                     <CircularProgressbarWithChildren
                         value={looperProgress}
                         maxValue={1}
                         styles={buildStyles({
-                            strokeLinecap: "butt",
-                            pathTransition: "none",
+                            strokeLinecap: 'butt',
+                            pathTransition: 'none',
                             pathColor: stateToRingColor[looperState],
-                            trailColor: "var(--color-muted)",
+                            trailColor: 'var(--color-muted)',
                         })}
                     >
-                        <div className="flex flex-col justify-center items-center gap-2">
-                            <div className="flex justify-center items-baseline gap-2">
-                                <div className={cn("size-3 rounded-full", stateToIndicatorColor[looperState])}></div>
-                                <p className="text-lg">{stateToText[looperState]}</p>
+                        <div className="flex flex-col items-center justify-center gap-2">
+                            <div className="flex items-baseline justify-center gap-2">
+                                <div
+                                    className={cn(
+                                        'size-3 rounded-full',
+                                        stateToIndicatorColor[looperState]
+                                    )}
+                                ></div>
+                                <p className="text-lg">
+                                    {stateToText[looperState]}
+                                </p>
                             </div>
 
                             <Separator />
 
-                            <p className="text-xs">Latency: {Math.round(latency * 1000)}ms</p>
+                            <p className="text-xs">
+                                Latency: {Math.round(latency * 1000)}ms
+                            </p>
                         </div>
                     </CircularProgressbarWithChildren>
                 </div>
 
                 {/* Settings */}
-                <div className="flex-1 flex flex-col px-2 border rounded-lg">
+                <div className="flex flex-col gap-3 rounded border p-3 md:flex-row">
                     {/* Knob and label */}
-                    <div className="flex-1 flex flex-col justify-center items-center gap-1">
+                    <div className="flex flex-1 flex-col items-center justify-center gap-2">
                         <p className="font-medium">Level</p>
-                        <Knob max={2} value={gain} onChange={handleGainChange} />
+                        <Knob
+                            max={2}
+                            value={gain}
+                            onChange={handleGainChange}
+                        />
                     </div>
 
-                    <Separator />
+                    <Separator className="md:hidden" />
+                    <Separator
+                        orientation="vertical"
+                        className="hidden md:block"
+                    />
 
-                    <div className="flex-1 flex flex-col justify-evenly items-center">
+                    {/* Undo and reset buttons */}
+                    <div className="flex flex-1 flex-col items-center justify-evenly gap-2">
                         <Button variant="outline">Undo</Button>
                         <Button variant="outline">Reset</Button>
                     </div>
                 </div>
             </div>
 
-            {/* <Separator /> */}
-
-            <h1 className="my-4 text-center text-4xl font-bold font-mono italic">looper/1.1</h1>
+            {/* <h1 className="my-4 text-center text-4xl font-bold font-mono italic md:hidden">looper/1.1</h1> */}
 
             {/* Footswitch */}
-            <div className="flex-1 p-2 pt-0">
-                <button className="size-full flex justify-center items-center text-muted-foreground text-4xl bg-primary rounded-2xl">
-                    Press to {!isRecording ? "record" : "stop"}
+            <div className="flex-1 p-2">
+                <button className="text-muted-foreground bg-primary flex size-full items-center justify-center rounded-2xl text-4xl">
+                    Press to {!isRecording ? 'record' : 'stop'}
                 </button>
             </div>
         </div>

@@ -26,7 +26,7 @@ export function Knob({ min = 0, max = 1, value = 0, onChange = () => {} }: Props
             {/* Knob */}
             <svg viewBox="0 0 100 100" className="w-full h-full">
                 {/* Base */}
-                <circle cx="50" cy="50" r="45" className="fill-secondary" />
+                <circle cx="50" cy="50" r="50" className="fill-secondary" />
 
                 {/* Indicator */}
                 <g
@@ -35,7 +35,7 @@ export function Knob({ min = 0, max = 1, value = 0, onChange = () => {} }: Props
                         transform: `rotate(${rotation}deg)`,
                     }}
                 >
-                    <rect x="48" y="5" width="4" height="24" className="fill-secondary-foreground" />
+                    <rect x="48" y="0" width="4" height="25" className="fill-secondary-foreground" />
                 </g>
             </svg>
         </div>
