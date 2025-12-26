@@ -88,21 +88,6 @@ export default function useLooperEngine(options: LooperOptions) {
         };
     }, [options]);
 
-    useEffect(() => {
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.code === "Space") {
-                event.preventDefault();
-                footswitch();
-            }
-        };
-
-        window.addEventListener("keydown", onKeyDown);
-
-        return () => {
-            window.removeEventListener("keydown", onKeyDown);
-        };
-    }, []);
-
     function footswitch() {
         const message: MainToWorkletMessage = { type: "footswitch" };
         looperNodeRef.current?.port.postMessage(message);
