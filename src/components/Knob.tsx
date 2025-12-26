@@ -7,7 +7,12 @@ interface Props {
     onChange?: (value: number) => void;
 }
 
-export function Knob({ min = 0, max = 1, value = 0, onChange = () => {} }: Props) {
+export function Knob({
+    min = 0,
+    max = 1,
+    value = 0,
+    onChange = () => {},
+}: Props) {
     const rotation = -135 + ((value - min) / (max - min)) * 270;
 
     return (
@@ -20,11 +25,11 @@ export function Knob({ min = 0, max = 1, value = 0, onChange = () => {} }: Props
                 step="any"
                 value={value}
                 onChange={(e) => onChange(Number(e.target.value))}
-                className="absolute inset-0 opacity-0 cursor-pointer"
+                className="absolute inset-0 cursor-pointer opacity-0"
             />
 
             {/* Knob */}
-            <svg viewBox="0 0 100 100" className="w-full h-full">
+            <svg viewBox="0 0 100 100" className="h-full w-full">
                 {/* Base */}
                 <circle cx="50" cy="50" r="50" className="fill-secondary" />
 
@@ -35,7 +40,13 @@ export function Knob({ min = 0, max = 1, value = 0, onChange = () => {} }: Props
                         transform: `rotate(${rotation}deg)`,
                     }}
                 >
-                    <rect x="48" y="0" width="4" height="25" className="fill-secondary-foreground" />
+                    <rect
+                        x="48"
+                        y="0"
+                        width="4"
+                        height="25"
+                        className="fill-secondary-foreground"
+                    />
                 </g>
             </svg>
         </div>

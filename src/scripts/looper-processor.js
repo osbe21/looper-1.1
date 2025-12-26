@@ -13,7 +13,8 @@ class LooperProcessor extends AudioWorkletProcessor {
         super();
 
         this.loopBuffer = new Float32Array(options.processorOptions.bufferSize);
-        this.updateProgressInterval = options.processorOptions.updateProgressInterval; // samples
+        this.updateProgressInterval =
+            options.processorOptions.updateProgressInterval; // samples
 
         this.port.onmessage = (e) => {
             switch (e.data.type) {
@@ -63,7 +64,8 @@ class LooperProcessor extends AudioWorkletProcessor {
 
         for (let i = 0; i < output.length; i++) {
             const latencyOffset = this.inputLatency + this.outputLatency;
-            const latencyAdjustedPos = (this.currentLoopPos + latencyOffset) % this.loopLength;
+            const latencyAdjustedPos =
+                (this.currentLoopPos + latencyOffset) % this.loopLength;
 
             switch (this.state) {
                 case "init recording":
@@ -100,8 +102,14 @@ class LooperProcessor extends AudioWorkletProcessor {
 
         this.updateProgressCounter += output.length;
 
-        if (this.updateProgressCounter >= this.updateProgressInterval && this.loopLength > 0) {
-            this.port.postMessage({ type: "set-progress", value: this.currentLoopPos / this.loopLength });
+        if (
+            this.updateProgressCounter >= this.updateProgressInterval &&
+            this.loopLength > 0
+        ) {
+            this.port.postMessage({
+                type: "set-progress",
+                value: this.currentLoopPos / this.loopLength,
+            });
             this.updateProgressCounter %= this.updateProgressInterval;
         }
 

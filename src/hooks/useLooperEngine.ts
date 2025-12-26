@@ -11,13 +11,19 @@ export interface LooperOptions {
     updateProgressInterval: number; // sekunder
 }
 
-export type LooperState = "empty" | "init recording" | "playing" | "overdubbing";
+export type LooperState =
+    | "empty"
+    | "init recording"
+    | "playing"
+    | "overdubbing";
 
 type MainToWorkletMessage =
     | { type: "footswitch" }
     | { type: "set-input-latency"; value: number }
     | { type: "set-output-latency"; value: number };
-type WorkletToMainMessage = { type: "set-state"; value: LooperState } | { type: "set-progress"; value: number };
+type WorkletToMainMessage =
+    | { type: "set-state"; value: LooperState }
+    | { type: "set-progress"; value: number };
 
 export default function useLooperEngine(options: LooperOptions) {
     const [looperState, setLooperState] = useState<LooperState>("empty");
@@ -37,7 +43,10 @@ export default function useLooperEngine(options: LooperOptions) {
         async function initAudioContext() {
             try {
                 audioCtx = createAudioContext();
-                micStream = await getMicStream(audioCtx, options.microphoneSettings);
+                micStream = await getMicStream(
+                    audioCtx,
+                    options.microphoneSettings
+                );
                 if (cancelled) return cancel();
                 const streamNode = createSourceNode(audioCtx, micStream, false);
                 const looperNode = await createLooperNode(
@@ -99,7 +108,10 @@ export default function useLooperEngine(options: LooperOptions) {
     }
 
     function updateLatency() {
-        const { inputLatency, outputLatency } = calculateLatency(audioCtxRef.current!, micStreamRef.current!);
+        const { inputLatency, outputLatency } = calculateLatency(
+            audioCtxRef.current!,
+            micStreamRef.current!
+        );
 
         looperNodeRef.current?.port.postMessage({
             type: "set-input-latency",
@@ -137,7 +149,10 @@ export default function useLooperEngine(options: LooperOptions) {
 
         setGain: function (value: number) {
             if (audioCtxRef.current && gainNodeRef.current)
-                gainNodeRef.current.gain.linearRampToValueAtTime(value, audioCtxRef.current.currentTime + 0.01);
+                gainNodeRef.current.gain.linearRampToValueAtTime(
+                    value,
+                    audioCtxRef.current.currentTime + 0.01
+                );
         },
     };
 }
@@ -148,7 +163,10 @@ function createAudioContext() {
 
 async function getMicStream(
     audioCtx: AudioContext,
-    microphoneSettings: { echoCancellation?: boolean; noiseSuppression?: boolean }
+    microphoneSettings: {
+        echoCancellation?: boolean;
+        noiseSuppression?: boolean;
+    }
 ) {
     return await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -162,7 +180,11 @@ async function getMicStream(
     });
 }
 
-function createSourceNode(audioCtx: AudioContext, micStream: MediaStream, useSine = false) {
+function createSourceNode(
+    audioCtx: AudioContext,
+    micStream: MediaStream,
+    useSine = false
+) {
     if (useSine) {
         const oscillatorNode = new OscillatorNode(audioCtx);
         oscillatorNode.start();
@@ -204,11 +226,14 @@ async function createLooperNode(
         outputChannelCount: [1],
         processorOptions: {
             bufferSize: Math.floor(bufferSize * audioCtx.sampleRate),
-            updateProgressInterval: Math.floor(updateProgressInterval * audioCtx.sampleRate),
+            updateProgressInterval: Math.floor(
+                updateProgressInterval * audioCtx.sampleRate
+            ),
         },
     });
 
-    looperNode.port.onmessage = (e) => onReceiveMessage(e.data as WorkletToMainMessage);
+    looperNode.port.onmessage = (e) =>
+        onReceiveMessage(e.data as WorkletToMainMessage);
 
     return looperNode;
 }

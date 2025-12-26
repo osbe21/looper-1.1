@@ -17,7 +17,10 @@ interface Props {
     onUpdateLooperOptions: (newOptions: Partial<LooperOptions>) => void;
 }
 
-export default function SettingsDialog({ looperOptions, onUpdateLooperOptions }: Props) {
+export default function SettingsDialog({
+    looperOptions,
+    onUpdateLooperOptions,
+}: Props) {
     return (
         <Dialog>
             <DialogTrigger asChild>

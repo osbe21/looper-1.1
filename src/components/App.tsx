@@ -23,12 +23,15 @@ export default function App() {
 
     return (
         <>
-            <div className="min-h-screen flex flex-col">
+            <div className="flex min-h-screen flex-col">
                 <header>
-                    <Navbar looperOptions={looperOptions} onUpdateLooperOptions={handleUpdateOptions} />
+                    <Navbar
+                        looperOptions={looperOptions}
+                        onUpdateLooperOptions={handleUpdateOptions}
+                    />
                 </header>
 
-                <main className="flex-1 flex">
+                <main className="flex flex-1">
                     <div className="flex-1">
                         {/* // TODO: Vis noe UI når vi ikke har tilgang til mikrofonen */}
                         <LooperPedal options={looperOptions} />

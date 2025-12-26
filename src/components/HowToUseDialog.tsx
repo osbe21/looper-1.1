@@ -23,6 +23,7 @@ export default function InformationDialog() {
                 </DialogHeader>
 
                 <p>It's important to enable microphone access</p>
+                <p>Press space to record and stop</p>
 
                 <DialogFooter className="sm:justify-start">
                     <DialogClose asChild>
