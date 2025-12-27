@@ -119,6 +119,8 @@ export default function useLooperEngine(options: LooperOptions) {
         updateLatency();
     }
 
+    // TODO: Kall dette når options.latencyCompensation endres
+    // TODO: Finn en måte å gjøre dette type safe
     function updateLatency() {
         const { inputLatency, outputLatency } = calculateLatency(
             audioCtxRef.current!,
