@@ -75,8 +75,8 @@ export default function SettingsDialog({
         <Dialog>
             <form onSubmit={handleSubmit}>
                 <DialogTrigger asChild>
-                    <Button variant="outline" size="icon">
-                        <Settings />
+                    <Button variant="outline" size="icon" className="group">
+                        <Settings className="block transition-all duration-300 group-hover:rotate-90" />
                     </Button>
                 </DialogTrigger>
                 <DialogContent>
