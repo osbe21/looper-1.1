@@ -3,8 +3,11 @@ import LooperPedal from "./LooperPedal";
 import Navbar from "./Navbar";
 import type { LooperOptions } from "@/hooks/useLooperEngine";
 import { Toaster } from "sonner";
+import useLatencyConstraintWarning from "@/hooks/useLatencyConstraintWarning";
 
 export default function App() {
+    useLatencyConstraintWarning();
+
     // TODO: Load disse fra local storage
     const [looperOptions, setLooperOptions] = useState<LooperOptions>({
         microphoneSettings: {
@@ -35,7 +38,6 @@ export default function App() {
 
                 <main className="flex flex-1">
                     <div className="flex-1">
-                        {/* // TODO: Vis noe UI når vi ikke har tilgang til mikrofonen */}
                         <LooperPedal options={looperOptions} />
                     </div>
                 </main>
