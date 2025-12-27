@@ -144,7 +144,7 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
             <div className="flex-1 p-2">
                 <button
                     onClick={footswitch}
-                    className="text-muted-foreground bg-primary flex size-full items-center justify-center rounded-2xl text-4xl"
+                    className="text-muted-foreground bg-input flex size-full items-center justify-center rounded-2xl text-4xl"
                 >
                     Press to {!isRecording ? "record" : "stop"}
                 </button>
