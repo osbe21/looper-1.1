@@ -125,6 +125,9 @@ export default function useLooperEngine(options: LooperOptions) {
             micStreamRef.current!
         );
 
+        const userCompensation =
+            options.latencyCompensation * audioCtxRef.current!.sampleRate;
+
         looperNodeRef.current?.port.postMessage({
             type: "set-latency",
             value: {
@@ -132,12 +135,13 @@ export default function useLooperEngine(options: LooperOptions) {
                     inputLatency * audioCtxRef.current!.sampleRate
                 ),
                 output: Math.floor(
-                    outputLatency * audioCtxRef.current!.sampleRate
+                    outputLatency * audioCtxRef.current!.sampleRate +
+                        userCompensation
                 ),
             },
         } as MainToWorkletMessage);
 
-        setLatency(inputLatency + outputLatency);
+        setLatency(inputLatency + outputLatency + options.latencyCompensation);
     }
 
     function onReceiveMessage(data: WorkletToMainMessage) {

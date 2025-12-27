@@ -144,8 +144,8 @@ export default function SettingsDialog({
                                 </FieldLabel>
                                 <Slider
                                     id="latency-compensation"
-                                    min={-0.05}
-                                    max={0.05}
+                                    min={0}
+                                    max={0.1}
                                     step={0.001}
                                     value={[latencyCompensation]}
                                     onValueChange={(value) =>
