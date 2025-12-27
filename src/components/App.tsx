@@ -5,19 +5,22 @@ import type { LooperOptions } from "@/hooks/useLooperEngine";
 import { Toaster } from "sonner";
 import useLatencyConstraintWarning from "@/hooks/useLatencyConstraintWarning";
 
+const defaultLooperOptions: LooperOptions = {
+    microphoneSettings: {
+        noiseSupression: true,
+        echoCancellation: true,
+    },
+    latencyCompensation: 0,
+    bufferSize: 5 * 60,
+    updateProgressInterval: 0.01,
+};
+
 export default function App() {
     useLatencyConstraintWarning();
 
     // TODO: Load disse fra local storage
-    const [looperOptions, setLooperOptions] = useState<LooperOptions>({
-        microphoneSettings: {
-            noiseSupression: true,
-            echoCancellation: true,
-        },
-        latencyCompensation: 0,
-        bufferSize: 5 * 60,
-        updateProgressInterval: 0.01,
-    });
+    const [looperOptions, setLooperOptions] =
+        useState<LooperOptions>(defaultLooperOptions);
 
     function handleUpdateOptions(newOptions: Partial<LooperOptions>) {
         setLooperOptions((prevSettings) => ({
