@@ -1,7 +1,6 @@
 import type { LooperOptions } from "@/hooks/useLooperEngine";
 import HowToUseDialog from "./HowToUseDialog";
 import SettingsDialog from "./SettingsDialog";
-import { ModeToggle } from "./ModeToggle";
 
 interface Props {
     looperOptions: LooperOptions;
@@ -19,7 +18,7 @@ export default function Navbar({
             </h1>
             <div className="flex gap-2">
                 <HowToUseDialog />
-                <ModeToggle />
+
                 <SettingsDialog
                     looperOptions={looperOptions}
                     onUpdateLooperOptions={onUpdateLooperOptions}

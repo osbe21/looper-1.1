@@ -26,6 +26,7 @@ type WorkletToMainMessage =
     | { type: "set-state"; value: LooperState }
     | { type: "set-progress"; value: number };
 
+// TODO: Finn ut hvordan håndtere errorer i hele hooken (f.eks. mikrofon tilgang nektet, audio context feil, osv)
 export default function useLooperEngine(options: LooperOptions) {
     const [looperState, setLooperState] = useState<LooperState>("empty");
     const [looperProgress, setLooperProgress] = useState(0);

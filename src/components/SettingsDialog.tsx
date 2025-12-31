@@ -24,6 +24,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Slider } from "./ui/slider";
 import { ScrollArea } from "./ui/scroll-area";
 import { useEffect, useState, type FormEvent } from "react";
+import { ModeToggle } from "./ModeToggle";
 
 interface Props {
     looperOptions: LooperOptions;
@@ -196,6 +197,12 @@ export default function SettingsDialog({
                                         setUpdateProgressInterval(value[0])
                                     }
                                 />
+                            </Field>
+
+                            <Field orientation="vertical">
+                                <FieldTitle>Select color theme</FieldTitle>
+                                // TODO: Finn ut hva som er galt med ikonet
+                                <ModeToggle />
                             </Field>
                         </FieldGroup>
                     </ScrollArea>
