@@ -75,8 +75,8 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
     }
 
     return (
-        <div className="flex h-full flex-col justify-stretch md:flex-row">
-            <div className="flex gap-4 p-4 md:m-8 md:flex-col">
+        <div className="flex h-full flex-col justify-stretch gap-4 p-4 md:flex-row">
+            <div className="flex gap-4 md:m-8 md:flex-col">
                 {/* Progress ring */}
                 <div className="flex flex-1 items-center justify-center">
                     <CircularProgressbarWithChildren
@@ -140,7 +140,8 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
             {/* <h1 className="my-4 text-center text-4xl font-bold font-mono italic md:hidden">looper/1.1</h1> */}
 
             {/* Footswitch */}
-            <div className="flex-1 p-2">
+            <div className="flex-1 md:p-8">
+                {/* TODO: Få denne til å se mer ut som en fysisk footswitch */}
                 <button
                     onClick={footswitch}
                     className="text-muted-foreground bg-input flex size-full items-center justify-center rounded-2xl text-4xl"
