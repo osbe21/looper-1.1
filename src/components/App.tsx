@@ -3,7 +3,6 @@ import LooperPedal from "./LooperPedal";
 import Navbar from "./Navbar";
 import type { LooperOptions } from "@/hooks/useLooperEngine";
 import { Toaster } from "sonner";
-import useLatencyConstraintWarning from "@/hooks/useLatencyConstraintWarning";
 
 const defaultLooperOptions: LooperOptions = {
     microphoneSettings: {
@@ -16,8 +15,6 @@ const defaultLooperOptions: LooperOptions = {
 };
 
 export default function App() {
-    useLatencyConstraintWarning();
-
     // TODO: Load disse fra local storage
     const [looperOptions, setLooperOptions] =
         useState<LooperOptions>(defaultLooperOptions);

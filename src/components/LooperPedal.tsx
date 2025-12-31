@@ -13,6 +13,7 @@ import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Separator } from "./ui/separator";
 import Footswitch from "./Footswitch";
+import useLatencyConstraintWarning from "@/hooks/useLatencyConstraintWarning";
 
 const stateToRingColor: Record<LooperState, string> = {
     empty: "var(--color-neutral-500)",
@@ -36,6 +37,8 @@ const stateToText: Record<LooperState, string> = {
 };
 
 export default function LooperPedal({ options }: { options: LooperOptions }) {
+    useLatencyConstraintWarning();
+
     const {
         looperState,
         looperProgress,
