@@ -12,6 +12,7 @@ import { Knob } from "./Knob";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Separator } from "./ui/separator";
+import Footswitch from "./Footswitch";
 
 const stateToRingColor: Record<LooperState, string> = {
     empty: "var(--color-neutral-500)",
@@ -137,17 +138,14 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
                 </div>
             </div>
 
-            {/* <h1 className="my-4 text-center text-4xl font-bold font-mono italic md:hidden">looper/1.1</h1> */}
+            <h1 className="my-4 text-center font-mono text-4xl font-bold italic md:hidden">
+                looper/1.1
+            </h1>
 
             {/* Footswitch */}
             <div className="flex-1 md:p-8">
                 {/* TODO: Få denne til å se mer ut som en fysisk footswitch */}
-                <button
-                    onClick={footswitch}
-                    className="text-muted-foreground bg-input flex size-full items-center justify-center rounded-2xl text-4xl"
-                >
-                    Press to {!isRecording ? "record" : "stop"}
-                </button>
+                <Footswitch isOn={isRecording} onClick={footswitch} />
             </div>
         </div>
     );
