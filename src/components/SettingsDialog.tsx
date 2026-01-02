@@ -201,7 +201,7 @@ export default function SettingsDialog({
 
                             <Field orientation="vertical">
                                 <FieldTitle>Select color theme</FieldTitle>
-                                // TODO: Finn ut hva som er galt med ikonet
+                                {/* TODO: Finn ut hva som er galt med ikonet */}
                                 <ModeToggle />
                             </Field>
                         </FieldGroup>
@@ -236,5 +236,5 @@ function formatSeconds(totalSeconds: number): string {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = Math.floor(totalSeconds % 60);
 
-    return `${minutes}:${seconds.toString().padStart(2, "0")}s`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
