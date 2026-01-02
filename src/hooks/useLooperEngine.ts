@@ -26,7 +26,6 @@ type WorkletToMainMessage =
     | { type: "set-state"; value: LooperState }
     | { type: "set-progress"; value: number };
 
-// TODO: Finn ut hvordan håndtere errorer i hele hooken (f.eks. mikrofon tilgang nektet, audio context feil, osv)
 export default function useLooperEngine(options: LooperOptions) {
     const [looperState, setLooperState] = useState<LooperState>("empty");
     const [looperProgress, setLooperProgress] = useState(0);
@@ -113,7 +112,9 @@ export default function useLooperEngine(options: LooperOptions) {
     }, [options]);
 
     function footswitch() {
-        // TODO: skjekk om alt er satt opp riktig (mikrofon og audio context)
+        if (!micStreamRef.current)
+            return toast.error("Microphone access denied");
+
         const message: MainToWorkletMessage = { type: "footswitch" };
         looperNodeRef.current?.port.postMessage(message);
 

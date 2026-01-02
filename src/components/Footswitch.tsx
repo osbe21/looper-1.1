@@ -6,6 +6,7 @@ interface Props {
     onClick?: () => void;
 }
 
+// FIXME: Trykk på space må bli håndtert her inne
 export default function Footswitch({ isOn, onClick }: Props) {
     const [isPressed, setIsPressed] = useState(false);
 
