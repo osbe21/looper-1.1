@@ -1,14 +1,39 @@
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Props {
     isOn: boolean;
     onClick?: () => void;
 }
 
-// FIXME: Trykk på space må bli håndtert her inne
 export default function Footswitch({ isOn, onClick }: Props) {
     const [isPressed, setIsPressed] = useState(false);
+
+    useEffect(() => {
+        const onSpaceDown = (event: KeyboardEvent) => {
+            if (event.code === "Space") {
+                event.preventDefault();
+                setIsPressed(true);
+            }
+        };
+
+        const onSpaceUp = (event: KeyboardEvent) => {
+            if (event.code === "Space") {
+                event.preventDefault();
+                setIsPressed(false);
+
+                if (onClick) onClick();
+            }
+        };
+
+        window.addEventListener("keydown", onSpaceDown);
+        window.addEventListener("keyup", onSpaceUp);
+
+        return () => {
+            window.removeEventListener("keydown", onSpaceDown);
+            window.removeEventListener("keyup", onSpaceUp);
+        };
+    }, []);
 
     return (
         <div className="bg-muted border-border relative size-full rounded-lg border p-3 shadow-sm">

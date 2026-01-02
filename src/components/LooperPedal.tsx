@@ -54,23 +54,11 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
         looperState === "init recording" || looperState === "overdubbing";
 
     useEffect(() => {
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.code === "Space") {
-                event.preventDefault();
-                footswitch();
-            }
-        };
-
-        window.addEventListener("keydown", onKeyDown);
-
         // TODO: Finn en bedre måte å aktivere audio context
         // når vi går til en annen tab blir contexten suspendert
         window.addEventListener("click", resumeAudioContext, { once: true });
 
-        return () => {
-            window.removeEventListener("keydown", onKeyDown);
-            window.removeEventListener("click", resumeAudioContext);
-        };
+        return () => window.removeEventListener("click", resumeAudioContext);
     }, []);
 
     function handleGainChange(value: number) {
