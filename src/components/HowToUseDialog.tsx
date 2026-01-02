@@ -19,26 +19,50 @@ export default function InformationDialog() {
                 </Button>
             </DialogTrigger>
             <DialogContent>
-                {/* <DialogHeader>
-                    <DialogTitle>How does the looper/1.1 work?</DialogTitle>
-                </DialogHeader> */}
-                {/* TODO: Fyll ut denne */}
-                <H1>Looper 1.1</H1>
-                <P>A digital, browser-based looper pedal.</P>
-                <H2>How to use</H2>
+                <H1>
+                    Welcome to{" "}
+                    <span className="font-mono italic">looper 1.1</span>
+                </H1>
+
                 <P>
-                    Press the footswitch to start recording a loop. You can also
-                    use the space bar. Press it one more time to stop recording.
-                    This loop will now play back, and you can use it to play
-                    over. You can also press the footswitch again to overdub.
-                    Use the undo button to revert an overdub.
+                    Record, layer, and build epic guitar loops right in your
+                    browser!
                 </P>
-                <H2>Notice</H2>
+
+                <H2>Quick Start</H2>
+
                 <P>
-                    You need to allow microphone-access. If you're having
-                    trouble recording, make sure you have selected the right
-                    microphone. It's also possible to alternative inputs, such
-                    as Fender Mustang Micro, or Boss Katana Go.
+                    <ol className="ml-4 list-outside list-decimal">
+                        <li>
+                            Hit the footswitch or spacebar to start recording
+                            your riff.
+                        </li>
+                        <li>
+                            Play your loop once, then press again to stop and
+                            start playback.
+                        </li>
+                        <li>
+                            Layer overdubs by pressing the footswitch during
+                            playback.
+                        </li>
+                        <li>Use Undo to remove the last overdub.</li>
+                    </ol>
+                </P>
+
+                <H2>Pro Tips</H2>
+
+                <P>
+                    <ul className="ml-4 list-outside list-disc">
+                        <li>Grant mic access for recording.</li>
+                        <li>
+                            Select the correct input (guitar interface or mic).
+                        </li>
+                        <li>
+                            Compatible with Fender Mustang Micro, Boss Katana
+                            Go, etc.
+                        </li>
+                        <li>Nail your timing for seamless loops!</li>
+                    </ul>
                 </P>
 
                 <DialogFooter className="sm:justify-start">
