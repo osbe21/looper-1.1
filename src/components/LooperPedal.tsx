@@ -105,7 +105,7 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
                 </div>
 
                 {/* Settings */}
-                <div className="flex flex-col gap-3 rounded border p-3 md:flex-row">
+                <div className="flex flex-col gap-3 rounded border p-3 shadow md:flex-row">
                     {/* Knob and label */}
                     <div className="flex flex-1 flex-col items-center justify-center gap-2">
                         <p className="font-medium">Level</p>
