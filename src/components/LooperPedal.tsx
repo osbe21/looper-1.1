@@ -136,7 +136,6 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
 
             {/* Footswitch */}
             <div className="flex-1 md:p-8">
-                {/* TODO: Få denne til å se mer ut som en fysisk footswitch */}
                 <Footswitch isOn={isRecording} onClick={footswitch} />
             </div>
         </div>
