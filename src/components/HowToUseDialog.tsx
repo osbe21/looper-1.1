@@ -18,10 +18,15 @@ export default function InformationDialog() {
                     How to use?
                 </Button>
             </DialogTrigger>
+
+            <DialogHeader className="sr-only">
+                <DialogTitle>How to use looper/1.1</DialogTitle>
+            </DialogHeader>
+
             <DialogContent>
                 <H1>
                     Welcome to{" "}
-                    <span className="font-mono italic">looper 1.1</span>
+                    <span className="font-mono italic">looper/1.1</span>
                 </H1>
 
                 <P>
