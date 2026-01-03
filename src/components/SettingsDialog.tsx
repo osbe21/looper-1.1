@@ -43,7 +43,6 @@ export default function SettingsDialog({
     );
 
     const [latencyCompensation, setLatencyCompensation] = useState(0);
-    const [bufferSize, setBufferSize] = useState(looperOptions.bufferSize);
     const [updateProgressInterval, setUpdateProgressInterval] = useState(
         looperOptions.updateProgressInterval
     );
@@ -52,7 +51,6 @@ export default function SettingsDialog({
         setNoiseSupression(looperOptions.microphoneSettings.noiseSupression);
         setEchoCancellation(looperOptions.microphoneSettings.echoCancellation);
         setLatencyCompensation(looperOptions.latencyCompensation);
-        setBufferSize(looperOptions.bufferSize);
         setUpdateProgressInterval(looperOptions.updateProgressInterval);
     }, [looperOptions]);
 
@@ -62,7 +60,6 @@ export default function SettingsDialog({
             echoCancellation,
         },
         latencyCompensation,
-        bufferSize,
         updateProgressInterval,
     };
 
@@ -151,27 +148,6 @@ export default function SettingsDialog({
                                     value={[latencyCompensation]}
                                     onValueChange={(value) =>
                                         setLatencyCompensation(value[0])
-                                    }
-                                />
-                            </Field>
-
-                            <Field>
-                                <FieldTitle>Max buffer size</FieldTitle>
-                                <FieldDescription>
-                                    Increasing this allows for longer
-                                    recordings, but uses more memory.
-                                </FieldDescription>
-                                <FieldLabel htmlFor="buffer-size">
-                                    {formatSeconds(bufferSize)}
-                                </FieldLabel>
-                                <Slider
-                                    id="buffer-size"
-                                    min={60}
-                                    max={10 * 60}
-                                    step={30}
-                                    value={[bufferSize]}
-                                    onValueChange={(value) =>
-                                        setBufferSize(value[0])
                                     }
                                 />
                             </Field>

@@ -10,7 +10,6 @@ const defaultLooperOptions: LooperOptions = {
         echoCancellation: true,
     },
     latencyCompensation: 0,
-    bufferSize: 5 * 60,
     updateProgressInterval: 0.01,
 };
 

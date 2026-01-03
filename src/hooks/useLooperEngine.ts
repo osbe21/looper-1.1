@@ -8,7 +8,6 @@ export interface LooperOptions {
         echoCancellation: boolean;
     };
     latencyCompensation: number; // sekunder
-    bufferSize: number; // sekunder
     updateProgressInterval: number; // sekunder
 }
 
@@ -57,7 +56,6 @@ export default function useLooperEngine(options: LooperOptions) {
                 const streamNode = createSourceNode(audioCtx, micStream, false);
                 const looperNode = await createLooperNode(
                     audioCtx,
-                    options.bufferSize,
                     options.updateProgressInterval,
                     onReceiveMessage
                 );
@@ -255,7 +253,6 @@ function calculateLatency(audioCtx: AudioContext, micStream: MediaStream) {
 
 async function createLooperNode(
     audioCtx: AudioContext,
-    bufferSize: number,
     updateProgressInterval: number,
     onReceiveMessage: (data: WorkletToMainMessage) => void
 ) {
@@ -266,7 +263,6 @@ async function createLooperNode(
         numberOfOutputs: 1,
         outputChannelCount: [1],
         processorOptions: {
-            bufferSize: Math.floor(bufferSize * audioCtx.sampleRate),
             updateProgressInterval: Math.floor(
                 updateProgressInterval * audioCtx.sampleRate
             ),

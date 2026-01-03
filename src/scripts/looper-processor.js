@@ -14,7 +14,7 @@ class LooperProcessor extends AudioWorkletProcessor {
     constructor(options) {
         super();
 
-        this.loopBuffer = new Float32Array(options.processorOptions.bufferSize);
+        this.loopBuffer = new Float32Array(5 * 60 * sampleRate); // 5 min
         this.updateProgressInterval =
             options.processorOptions.updateProgressInterval; // samples
 
