@@ -30,8 +30,11 @@ export function Knob({
 
             {/* Knob */}
             <svg viewBox="0 0 100 100" className="h-full w-full">
+                {/* Outline */}
+                <circle cx="50" cy="50" r="50" className="fill-border" />
+
                 {/* Base */}
-                <circle cx="50" cy="50" r="50" className="fill-secondary" />
+                <circle cx="50" cy="50" r="48" className="fill-secondary" />
 
                 {/* Indicator */}
                 <g
