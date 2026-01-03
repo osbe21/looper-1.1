@@ -29,7 +29,9 @@ export default function InformationDialog() {
                     <div className="space-y-4">
                         <H1>
                             Welcome to{" "}
-                            <span className="font-mono italic">looper/1.1</span>
+                            <span className="text-primary font-mono italic">
+                                looper/1.1
+                            </span>
                         </H1>
 
                         <P>
