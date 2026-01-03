@@ -43,7 +43,6 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
         looperState,
         looperProgress,
         latency,
-        resumeAudioContext,
         footswitch,
         setGain: setLooperGain,
         undo,
@@ -54,14 +53,6 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
 
     const isRecording =
         looperState === "init recording" || looperState === "overdubbing";
-
-    useEffect(() => {
-        // TODO: Finn en bedre måte å aktivere audio context
-        // når vi går til en annen tab blir contexten suspendert
-        window.addEventListener("click", resumeAudioContext, { once: true });
-
-        return () => window.removeEventListener("click", resumeAudioContext);
-    }, []);
 
     function handleGainChange(value: number) {
         setGain(value);

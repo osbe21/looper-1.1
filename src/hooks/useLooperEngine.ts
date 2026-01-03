@@ -70,6 +70,8 @@ export default function useLooperEngine(options: LooperOptions) {
                 micStreamRef.current = micStream;
                 looperNodeRef.current = looperNode;
                 gainNodeRef.current = gainNode;
+
+                updateLatency();
             } catch (error) {
                 cancel();
 
@@ -78,19 +80,12 @@ export default function useLooperEngine(options: LooperOptions) {
 
                     switch (error.name) {
                         case "NotAllowedError":
-                            message = "Access to the microphone was denied.";
-                            break;
-                        case "NotFoundError":
-                            message =
-                                "No microphone was found. Please connect a microphone and try again.";
-                            break;
-                        case "SecurityError":
-                            message =
-                                "Browser security settings are preventing access to the microphone.";
+                            message = "Microphone access denied.";
                             break;
                         default:
                             message =
                                 "An unknown error occurred during initialization.";
+                            break;
                     }
 
                     toast.error(message);
@@ -116,35 +111,49 @@ export default function useLooperEngine(options: LooperOptions) {
 
     function footswitch() {
         if (!micStreamRef.current)
-            return toast.error("Microphone access denied");
+            return toast.error("Microphone access denied.");
+
+        const ctx = audioCtxRef.current;
+
+        if (!ctx) return;
 
         const message: MainToWorkletMessage = { type: "footswitch" };
-        looperNodeRef.current?.port.postMessage(message);
 
-        updateLatency();
+        if (ctx.state !== "running") {
+            ctx.resume().then(() => {
+                updateLatency();
+                looperNodeRef.current?.port.postMessage(message);
+            });
+        } else {
+            looperNodeRef.current?.port.postMessage(message);
+        }
     }
 
-    // TODO: Kall dette når options.latencyCompensation endres
-    // TODO: Finn en måte å gjøre dette type safe
     function updateLatency() {
-        const { inputLatency, outputLatency } = calculateLatency(
-            audioCtxRef.current!,
-            micStreamRef.current!
+        if (!audioCtxRef.current || !micStreamRef.current) return;
+
+        const { inputLatency, outputLatency } = getLatency(
+            audioCtxRef.current,
+            micStreamRef.current
         );
 
-        const userCompensation =
-            options.latencyCompensation * audioCtxRef.current!.sampleRate;
+        const userCompensationSamples =
+            options.latencyCompensation * audioCtxRef.current.sampleRate;
+
+        const inputSamples = Math.floor(
+            inputLatency * audioCtxRef.current.sampleRate
+        );
+
+        const outputSamples = Math.floor(
+            outputLatency * audioCtxRef.current.sampleRate +
+                userCompensationSamples
+        );
 
         looperNodeRef.current?.port.postMessage({
             type: "set-latency",
             value: {
-                input: Math.floor(
-                    inputLatency * audioCtxRef.current!.sampleRate
-                ),
-                output: Math.floor(
-                    outputLatency * audioCtxRef.current!.sampleRate +
-                        userCompensation
-                ),
+                input: inputSamples,
+                output: outputSamples,
             },
         } as MainToWorkletMessage);
 
@@ -165,10 +174,6 @@ export default function useLooperEngine(options: LooperOptions) {
         looperState,
         looperProgress,
         latency,
-
-        resumeAudioContext: function () {
-            audioCtxRef.current?.resume().then(updateLatency);
-        },
 
         footswitch,
 
@@ -236,7 +241,7 @@ function createSourceNode(
     }
 }
 
-function calculateLatency(audioCtx: AudioContext, micStream: MediaStream) {
+function getLatency(audioCtx: AudioContext, micStream: MediaStream) {
     const micTrack = micStream.getAudioTracks()[0];
     const micTrackSettings = micTrack.getSettings();
 
