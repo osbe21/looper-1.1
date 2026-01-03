@@ -31,8 +31,8 @@ export default function InformationDialog() {
 
                 <H2>Quick Start</H2>
 
-                <P>
-                    <ol className="ml-4 list-outside list-decimal">
+                <ol className="ml-4 list-outside list-decimal">
+                    <P>
                         <li>
                             Hit the footswitch or spacebar to start recording
                             your riff.
@@ -46,13 +46,13 @@ export default function InformationDialog() {
                             playback.
                         </li>
                         <li>Use Undo to remove the last overdub.</li>
-                    </ol>
-                </P>
+                    </P>
+                </ol>
 
                 <H2>Pro Tips</H2>
 
-                <P>
-                    <ul className="ml-4 list-outside list-disc">
+                <ul className="ml-4 list-outside list-disc">
+                    <P>
                         <li>Grant mic access for recording.</li>
                         <li>
                             Select the correct input (guitar interface or mic).
@@ -62,8 +62,8 @@ export default function InformationDialog() {
                             Go, etc.
                         </li>
                         <li>Nail your timing for seamless loops!</li>
-                    </ul>
-                </P>
+                    </P>
+                </ul>
 
                 <DialogFooter className="sm:justify-start">
                     <DialogClose asChild>
