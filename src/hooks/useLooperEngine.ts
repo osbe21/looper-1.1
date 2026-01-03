@@ -38,6 +38,9 @@ export default function useLooperEngine(options: LooperOptions) {
     const gainNodeRef = useRef<GainNode | null>(null);
 
     useEffect(() => {
+        setLooperState("empty");
+        setLooperProgress(0);
+
         let cancelled = false;
         let audioCtx: AudioContext;
         let micStream: MediaStream;
