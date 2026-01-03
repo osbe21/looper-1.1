@@ -21,6 +21,8 @@ class LooperProcessor extends AudioWorkletProcessor {
                 case "footswitch":
                     this.handleFootswitch();
                     break;
+                case "reset":
+                    this.reset();
                 case "set-latency":
                     this.inputLatency = e.data.value.input;
                     this.outputLatency = e.data.value.output;
@@ -54,6 +56,12 @@ class LooperProcessor extends AudioWorkletProcessor {
         this.loopBuffer.fill(0);
         this.loopLength = 0;
         this.currentLoopPos = 0;
+
+        this.port.postMessage({ type: "set-state", value: this.state });
+        this.port.postMessage({
+            type: "set-progress",
+            value: 0,
+        });
     }
 
     process(inputs, outputs) {

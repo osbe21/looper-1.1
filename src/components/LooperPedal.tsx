@@ -46,6 +46,7 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
         resumeAudioContext,
         footswitch,
         setGain: setLooperGain,
+        reset,
     } = useLooperEngine(options);
 
     const [gain, setGain] = useState(1);
@@ -123,9 +124,11 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
 
                     {/* Undo and reset buttons */}
                     <div className="flex flex-1 flex-col items-center justify-evenly gap-2">
-                        {/* TODO: Gi reset og undo knappene funksjonalitet */}
+                        {/* TODO: Gi undo knappen funksjonalitet */}
                         <Button variant="outline">Undo</Button>
-                        <Button variant="outline">Reset</Button>
+                        <Button onClick={reset} variant="outline">
+                            Reset
+                        </Button>
                     </div>
                 </div>
             </div>
