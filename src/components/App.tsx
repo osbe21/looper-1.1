@@ -13,7 +13,6 @@ const defaultLooperOptions: LooperOptions = {
     updateProgressInterval: 0.01,
 };
 
-// TODO: Endre css variabler, fonter, etc for hele nettsiden (tweakcn?)
 export default function App() {
     // TODO: Load disse fra local storage
     const [looperOptions, setLooperOptions] =
