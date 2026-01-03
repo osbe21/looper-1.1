@@ -20,6 +20,7 @@ export type LooperState =
 
 type MainToWorkletMessage =
     | { type: "footswitch" }
+    | { type: "undo" }
     | { type: "reset" }
     | { type: "set-latency"; value: { input: number; output: number } };
 
@@ -179,6 +180,13 @@ export default function useLooperEngine(options: LooperOptions) {
                     value,
                     audioCtxRef.current.currentTime + 0.01
                 );
+        },
+
+        undo: function () {
+            if (looperNodeRef.current)
+                looperNodeRef.current.port.postMessage({
+                    type: "undo",
+                } satisfies MainToWorkletMessage);
         },
 
         reset: function () {

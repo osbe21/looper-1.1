@@ -22,8 +22,12 @@ class LooperProcessor extends AudioWorkletProcessor {
                 case "footswitch":
                     this.handleFootswitch();
                     break;
+                case "undo":
+                    this.undo();
+                    break;
                 case "reset":
                     this.reset();
+                    break;
                 case "set-latency":
                     this.inputLatency = e.data.value.input;
                     this.outputLatency = e.data.value.output;
@@ -32,35 +36,45 @@ class LooperProcessor extends AudioWorkletProcessor {
         };
     }
 
-    handleFootswitch() {
-        switch (this.state) {
-            case "empty":
-                this.state = "init recording";
-                break;
-            case "init recording":
-                if (this.loopLength === 0) return;
-                this.state = "playing";
-                break;
-            case "playing":
-                this.state = "overdubbing";
-                this.overdubs.push(new Float32Array(this.loopLength));
-                break;
-            case "overdubbing":
-                this.state = "playing";
-                break;
-        }
-
+    setState(newState) {
+        this.state = newState;
         this.port.postMessage({ type: "set-state", value: this.state });
     }
 
+    handleFootswitch() {
+        switch (this.state) {
+            case "empty":
+                this.setState("init recording");
+                break;
+            case "init recording":
+                if (this.loopLength === 0) return;
+                this.setState("playing");
+                break;
+            case "playing":
+                this.setState("overdubbing");
+                this.overdubs.push(new Float32Array(this.loopLength));
+                break;
+            case "overdubbing":
+                this.setState("playing");
+                break;
+        }
+    }
+
+    undo() {
+        if (this.overdubs.length === 0) return;
+
+        this.overdubs.pop();
+
+        this.setState("playing");
+    }
+
     reset() {
-        this.state = "empty";
+        this.setState("empty");
         this.loopBuffer.fill(0);
         this.loopLength = 0;
         this.currentLoopPos = 0;
         this.overdubs = [];
 
-        this.port.postMessage({ type: "set-state", value: this.state });
         this.port.postMessage({
             type: "set-progress",
             value: 0,
@@ -104,12 +118,17 @@ class LooperProcessor extends AudioWorkletProcessor {
                 case "overdubbing":
                     output[i] = this.loopBuffer[latencyAdjustedPos];
 
+                    for (let odIdx = 0; odIdx < this.overdubs.length; odIdx++)
+                        output[i] += this.overdubs[odIdx][latencyAdjustedPos];
+
                     this.overdubs.at(-1)[this.currentLoopPos] += input[i];
 
                     this.currentLoopPos++;
 
-                    if (this.currentLoopPos >= this.loopLength)
+                    if (this.currentLoopPos >= this.loopLength) {
                         this.currentLoopPos = 0;
+                        this.overdubs.push(new Float32Array(this.loopLength));
+                    }
 
                     break;
             }
