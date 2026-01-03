@@ -35,8 +35,8 @@ export default function InformationDialog() {
                         </H1>
 
                         <P>
-                            Record, layer, and build epic guitar loops right in
-                            your browser!
+                            Record, layer, and build guitar loops right in your
+                            browser!
                         </P>
 
                         <H2>Quick Start</H2>

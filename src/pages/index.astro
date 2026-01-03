@@ -1,6 +1,9 @@
 ---
 import "../styles/global.css";
 import App from "../components/App";
+
+// TODO: Legg til link
+const link = "";
 ---
 
 <script is:inline>
@@ -25,11 +28,42 @@ import App from "../components/App";
 <html lang="en">
     <head>
         <meta charset="utf-8" />
+        <!-- TODO: Legg til favicon -->
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="viewport" content="width=device-width" />
-        <meta name="description" content="Web based looper pedal for guitar players" />
+        <meta
+            name="description"
+            content="Free web-based looper pedal for guitarists. Record, layer, and build loops right in your browser!"
+        />
+        <meta
+            name="keywords"
+            content="looper pedal, guitar looper, web audio, music production, free looper, browser looper"
+        />
+        <meta name="author" content="Oscar Berge" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={link} />
         <meta name="generator" content={Astro.generator} />
-        <title>Looper</title>
+        <title>Looper/1.1 - Web-Based Guitar Looper Pedal</title>
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={link} />
+        <meta property="og:title" content="Looper/1.1 - Web-Based Guitar Looper Pedal" />
+        <meta
+            property="og:description"
+            content="Record, layer, and build guitar loops right in your browser. Perfect for musicians and producers!"
+        />
+        <meta property="og:image" content={link + "/og-image.png"} />
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={link} />
+        <meta property="twitter:title" content="Looper/1.1 - Web-Based Guitar Looper Pedal" />
+        <meta
+            property="twitter:description"
+            content="Record, layer, and build guitar loops right in your browser. Perfect for musicians and producers!"
+        />
+        <meta property="twitter:image" content={link + "/og-image.png"} />
     </head>
     <body>
         <App client:load />
