@@ -158,7 +158,7 @@ export default function SettingsDialog({
                                     Loop progress update interval
                                 </FieldTitle>
                                 <FieldDescription>
-                                    Lowering this value makes the progress bar
+                                    A lower value makes the progress bar
                                     smoother, but uses more CPU.
                                 </FieldDescription>
                                 <FieldLabel htmlFor="loop-progress-update-interval">
