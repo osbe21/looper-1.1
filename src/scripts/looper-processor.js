@@ -1,5 +1,6 @@
 // Typescript har ikke full inference for AudioWorklets, så filen må skrives i js for å unngå // @ts-ignore overalt
 
+// TODO: rydd opp og streamline denne klassen
 class LooperProcessor extends AudioWorkletProcessor {
     state = "empty";
     loopLength = 0;
