@@ -66,7 +66,10 @@ export default function InformationDialog() {
                             Compatible with Fender Mustang Micro, Boss Katana
                             Go, etc.
                         </li>
-                        <li>Nail your timing for seamless loops!</li>
+                        <li>
+                            If you're experiencing too much latency, you can
+                            manually increase compensation in the settings.
+                        </li>
                     </P>
                 </ul>
 
