@@ -82,16 +82,16 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
                                         stateToIndicatorColor[looperState]
                                     )}
                                 ></div>
-                                <p className="text-lg">
+                                <span className="text-lg">
                                     {stateToText[looperState]}
-                                </p>
+                                </span>
                             </div>
 
                             <Separator />
 
-                            <p className="text-xs">
+                            <span className="text-xs">
                                 Latency: {Math.round(latency * 1000)}ms
-                            </p>
+                            </span>
                         </div>
                     </CircularProgressbarWithChildren>
                 </div>
@@ -100,7 +100,7 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
                 <div className="flex flex-col gap-3 rounded border p-3 shadow md:flex-row">
                     {/* Knob and label */}
                     <div className="flex flex-1 flex-col items-center justify-center gap-2">
-                        <p className="font-medium">Level</p>
+                        <span className="font-medium">Level</span>
                         <Knob
                             max={2}
                             value={gain}
@@ -126,9 +126,9 @@ export default function LooperPedal({ options }: { options: LooperOptions }) {
                 </div>
             </div>
 
-            <h1 className="my-4 text-center font-mono text-4xl font-bold italic md:hidden">
+            <h2 className="my-4 text-center font-mono text-4xl font-bold italic md:hidden">
                 looper/1.1
-            </h1>
+            </h2>
 
             {/* Footswitch */}
             <div className="flex-1 md:p-8">
