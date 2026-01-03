@@ -131,6 +131,7 @@ export default function SettingsDialog({
                                 </FieldGroup>
                             </FieldSet>
 
+                            {/* TODO: Legg til komplett override av browser estimert latency */}
                             <Field>
                                 <FieldTitle>Latency compensation</FieldTitle>
                                 <FieldDescription>
@@ -143,7 +144,7 @@ export default function SettingsDialog({
                                 <Slider
                                     id="latency-compensation"
                                     min={0}
-                                    max={0.1}
+                                    max={0.2}
                                     step={0.001}
                                     value={[latencyCompensation]}
                                     onValueChange={(value) =>
