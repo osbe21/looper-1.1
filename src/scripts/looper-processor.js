@@ -5,6 +5,7 @@ class LooperProcessor extends AudioWorkletProcessor {
     loopLength = 0;
     currentLoopPos = 0;
     updateProgressCounter = 0;
+    overdubs = [];
 
     inputLatency = 0; // samples
     outputLatency = 0; // samples
@@ -42,6 +43,7 @@ class LooperProcessor extends AudioWorkletProcessor {
                 break;
             case "playing":
                 this.state = "overdubbing";
+                this.overdubs.push(new Float32Array(this.loopLength));
                 break;
             case "overdubbing":
                 this.state = "playing";
@@ -56,6 +58,7 @@ class LooperProcessor extends AudioWorkletProcessor {
         this.loopBuffer.fill(0);
         this.loopLength = 0;
         this.currentLoopPos = 0;
+        this.overdubs = [];
 
         this.port.postMessage({ type: "set-state", value: this.state });
         this.port.postMessage({
@@ -80,27 +83,33 @@ class LooperProcessor extends AudioWorkletProcessor {
 
                     this.loopLength++;
 
-                    if (this.loopLength === this.loopBuffer.length) {
+                    if (this.loopLength === this.loopBuffer.length)
                         this.handleFootswitch();
-                    }
 
                     break;
 
                 case "playing":
                     output[i] = this.loopBuffer[latencyAdjustedPos];
 
+                    for (let odIdx = 0; odIdx < this.overdubs.length; odIdx++)
+                        output[i] += this.overdubs[odIdx][latencyAdjustedPos];
+
                     this.currentLoopPos++;
-                    this.currentLoopPos %= this.loopLength;
+
+                    if (this.currentLoopPos >= this.loopLength)
+                        this.currentLoopPos = 0;
 
                     break;
 
                 case "overdubbing":
                     output[i] = this.loopBuffer[latencyAdjustedPos];
 
-                    this.loopBuffer[this.currentLoopPos] += input[i];
+                    this.overdubs.at(-1)[this.currentLoopPos] += input[i];
 
                     this.currentLoopPos++;
-                    this.currentLoopPos %= this.loopLength;
+
+                    if (this.currentLoopPos >= this.loopLength)
+                        this.currentLoopPos = 0;
 
                     break;
             }
